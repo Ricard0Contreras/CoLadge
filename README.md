@@ -1,2 +1,6 @@
 # CoLadge
-Git clone this repo with HTTPS and use your local git install to push remote changes Cooper Krantz
+<br>
+A GENIUS wordplay: <br>
+*Colorful* | cozy **Lodge** | Picture group *Colage*<br>
+
+Development Repo for CoLadge project
