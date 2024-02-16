@@ -12,8 +12,10 @@ root = Tk()
 root.title('COLadge')
 root.config(bg="lightgray")
 width, height = root.winfo_screenwidth(), root.winfo_screenheight()
-root.geometry('%dx%d+0+0' % (width/3,height/1.5))
-root.maxsize(width, height)#figure out what size it is currently!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111!!!!!!!!!!!!!!!!!!
+scaleW = int(width * .3)
+scaleH = int(height * .5)
+root.geometry('%dx%d+0+0' % (scaleW,scaleH))
+root.maxsize(scaleW, scaleH)
 frame=tk.Frame(root,bg='lightblue')
 frame.place(rely=0.2,relheight=height,relwidth=width)
 
