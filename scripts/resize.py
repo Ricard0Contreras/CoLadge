@@ -5,7 +5,7 @@ import sys
 
 
 def calSha1(filePath):
-    if len(path) < 2:
+    if len(filePath) < 2:
         sys.exit('Usage: %s filename' % filePath)
 
     if not os.path.exists(sys.argv[1]):
@@ -35,7 +35,7 @@ def imgRemux(imgSize, path):
         height = width
         print("Taller")
 
-    cropped = img[0:width, 0:height] #Crop Image to make into 1:1 Ratio
+    cropped = img[0:width, 0:height]  # Crop Image to make into 1:1 Ratio
 
-    resized = cv.resize(cropped,(finalImgSize, finalImgSize),interpolation = cv.INTER_CUBIC) #Resize picture 
-    cv.imwrite( calSha1(path) + '.png',resized) #Save resized image to file
+    resized = cv.resize(cropped, (finalImgSize, finalImgSize), interpolation=cv.INTER_CUBIC)  # Resize picture
+    cv.imwrite(calSha1(path) + '.png', resized)  # Save resized image to file
