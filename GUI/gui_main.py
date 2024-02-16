@@ -17,18 +17,6 @@ root.maxsize(width, height)#figure out what size it is currently!!!!!!!!!!!!!!!!
 frame=tk.Frame(root,bg='lightblue')
 frame.place(rely=0.2,relheight=height,relwidth=width)
 
-#saveing things to database
-def save_to_database(value):
-    #establish a database connection
-    conn = sqlite3.connect('insert database here.db')#insert database here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cursor = conn.cursor()
-    
-    #insert values into database
-    cursor.execute("INSERT INTO input_page (scale_value) VALUES (?)", (value,))
-    conn.commit()
-    
-    #close the connection
-    conn.close()
 
 
 #other pages defined
@@ -42,17 +30,15 @@ def input_page():
     label.place(relx=10, rely=10)
     
     #rows/column
-    rows_input = Scale(frame, from_=1, to=5, command= lambda value: save_to_database(value))
+    rows_input = Scale(frame, from_=1, to=5 )
     rows_input.place(in_= label, relx=0.3, rely=0.7, anchor = CENTER)
  
-    column_input = Scale(frame, from_=1, to=5, orient=HORIZONTAL, command= lambda value: save_to_database(value))
+    column_input = Scale(frame, from_=1, to=5, orient=HORIZONTAL)
     column_input.place(relx=0.3, rely=0.7)
     
     
     
-    
-    
-    
+
     
 '''  
     #making grid with loops
