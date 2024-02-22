@@ -80,12 +80,9 @@ def searchValue(uniqueKey):  # based on the uniqueKey inputed return all the col
         con = sqlite3.connect('database' + os.sep + localdbFile)
         cur = con.cursor()
 
-        x = input("Enter the row that you would like to individually open based off of 'key' and 'c'': ")
-        y = x.split(' ')
-        sql = """SELECT * FROM photos WHERE key = ? AND c = ?"""
-        res = cur.execute(sql, (y, ))
-        con.commit()
-        print("\n", res.fetchall())
+        cur.execute("""SELECT c, c1, c2, c3, c4, c5 FROM photos WHERE key = ?""", [uniqueKey])
+        result = cur.fetchone()
+        return result[0], result[1], result[2], result[3], result[4], result[5]
 
     except sqlite3.Error as e:
         print(e)
