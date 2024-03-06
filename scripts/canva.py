@@ -20,4 +20,3 @@ def putPic(canvaImg, picPath, sizePics, x, y):
     cords = (posX, posY)
     img2 = Image.open(picPath)
     canvaImg.paste(img2, cords)
-    canvaImg.save('result.png')
