@@ -74,15 +74,35 @@ def showValues():  # prints all data form the table photos
             con.close()
 
 
-# NOT WORKING
-def searchValue(uniqueKey):  # based on the uniqueKey inputed return all the colors in a list for easier processing 
+def returnColors(uniqueKey):  # based on the uniqueKey inputed return all the colors in a list for easier processing 
     try:
         con = sqlite3.connect('database' + os.sep + localdbFile)
         cur = con.cursor()
 
         cur.execute("""SELECT c, c1, c2, c3, c4, c5 FROM photos WHERE key = ?""", [uniqueKey])
         result = cur.fetchone()
-        return result[0], result[1], result[2], result[3], result[4], result[5]
+        #return result[0], result[1], result[2], result[3], result[4], result[5]
+        return result
+
+    except sqlite3.Error as e:
+        print(e)
+
+    finally:
+        if con:
+            con.close()
+
+
+def keyInDB(uniqueKey):
+    try:
+        con = sqlite3.connect('database' + os.sep + localdbFile)
+        cur = con.cursor()
+
+        cur.execute("""SELECT key FROM photos WHERE key = ?""", [uniqueKey])
+        result = cur.fetchone()
+        if str(result) == 'None':
+            return False
+        else:
+            return True
 
     except sqlite3.Error as e:
         print(e)
