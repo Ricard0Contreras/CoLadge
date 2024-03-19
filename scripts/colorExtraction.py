@@ -1,7 +1,7 @@
 import fast_colorthief
 
 
-def getColor(path):
+def getColorPallete(path):
     # path of the image of
     image_path = path
 
@@ -11,12 +11,4 @@ def getColor(path):
     # dominant_color = fast_colorthief.get_dominant_color(image_path, quality=calidad, use_gpu=True)
     colorList = fast_colorthief.get_dominant_color(image_path, quality=calidad, use_gpu=True)
 
-    # Considering only storing the main color of a picture
-
-    listColor = [*colorList]
-
-    for n in range(len(listColor)):
-        listColor[n] = str(listColor[n]).replace("(", "")
-        listColor[n] = str(listColor[n]).replace(")", "")
-
-    return listColor
+    return colorList

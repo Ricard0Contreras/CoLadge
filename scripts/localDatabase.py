@@ -80,11 +80,20 @@ def returnColors(uniqueKey):  # based on the uniqueKey inputed return all the co
         cur = con.cursor()
 
         cur.execute("""SELECT c FROM photos WHERE key = ?""", [uniqueKey])
-        result = cur.fetchone()
-        tempList = str(result.split(','))
-        for n in range(len(tempList)):
-           tempList[n] = tempList[n].strip()
-        return tempList
+        result = [*cur.fetchone()]
+        
+        #tempList = str(tempList.split(','))
+        listColor = []
+        listColor = str(result).split(',')
+
+        for n in range(len(listColor)):
+            listColor[n] = str(listColor[n]).replace("[", "")
+            listColor[n] = str(listColor[n]).replace("'", "")
+            listColor[n] = str(listColor[n]).replace('"', "")
+            listColor[n] = str(listColor[n]).replace("]", "")
+            listColor[n] = listColor[n].strip()
+
+        return listColor
 
     except sqlite3.Error as e:
         print(e)
