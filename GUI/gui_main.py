@@ -3,188 +3,151 @@ import tkinter as tk
 from tkinter import font
 import os
 import sqlite3
+from tkinter.filedialog import askopenfile
+from tkinter import filedialog
+from PIL import Image, ImageTk
+from tkinter.messagebox import askyesno
+from tkinter import Scale
 
+root = tk.Tk()
 
-
-root = Tk()
-
-#main window instuctions
 root.title('COLadge')
-root.config(bg="lightgray")
+root.config(bg='#232A2D')
+
+#screen dementions 
 width, height = root.winfo_screenwidth(), root.winfo_screenheight()
-scaleW = int(width * .3)
-scaleH = int(height * .5)
-root.geometry('%dx%d+0+0' % (scaleW,scaleH))
+scaleW = int(width * 0.3)
+scaleH = int(height * 0.6)
+root.geometry(f"{scaleW}x{scaleH}+0+0")
 root.maxsize(scaleW, scaleH)
-frame=tk.Frame(root,bg='lightblue')
-frame.place(rely=0.2,relheight=height,relwidth=width)
+root.minsize(scaleW, scaleH)
+
+
+#INPUT PAGE DETAILS
+
+#new window
+frame=tk.Frame(root, bg='#232A2D')
+frame.place(anchor='nw', y=scaleH * 0.13 , width= scaleW, height= scaleH * 0.9)
+    
+#rows/column
+rows_input = Scale(frame, from_=1, to=50, activebackground='lightpink', troughcolor='lightcoral', bg='darkseagreen4')
+rows_input.place(in_= frame, anchor='n', x=scaleW * 0.09, y=scaleH * 0.502,  height= scaleH * 0.25, width=scaleW * 0.095)
+ 
+column_input = Scale(frame, from_=1, to=50, orient=HORIZONTAL, activebackground='lightpink', troughcolor='lightcoral', bg='darkseagreen4')
+column_input.place(in_=frame, anchor='n', x=scaleW * 0.37, y=scaleH * 0.775, width= scaleW * 0.4, height= scaleH * 0.08, relheight=0.001)
+    
+#define number of rows and columns
+labelRows = [[' ' for _ in range(5)] for _ in range(5)]
+empty_boxes = []
+for row_index, row in enumerate(labelRows):
+    row_boxes = []
+    for cell_index, cell in enumerate(row):
+        box = tk.Label(root, text=cell, width=2, height=1, bg='pink')
+        box.place(x=cell_index * (scaleW * 0.055) + 130, y=row_index * (scaleH * 0.043) + 330, anchor='n')
+        row_boxes.append(box)
+        empty_boxes.append(row_boxes)
+
+#update label for rows x columns
+def update_label():
+    selected_rows = rows_input.get()
+    selected_columns = column_input.get()
+    label.config(text=f"{selected_rows} x {selected_columns}")
+
+#label to display rows x columns before you confirm an update
+label = tk.Label(root, text="1 x 1", width=8, height=2, bg='#232A2D', fg='white', font=10)
+label.place(in_=frame, anchor='n', x=scaleW * 0.72, y=scaleH * 0.77)
+
+#update button for rows x columns
+update_button = tk.Button(root, text="Update", command=update_label)
+update_button.place(in_=frame, anchor='n', x=scaleW * 0.93, y=scaleH * 0.813)
+
+#file selector            
+def on_frame_configure(canvas):
+    """Reset the scroll region to encompass the inner frame."""
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+def upload_file():
+    f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
+    filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
+    
+    # Start from row 5 and column 1
+    row, col = 5, 1
+    
+    for filename in filenames:
+        img = Image.open(filename)
+        img = img.resize((100, 100))  # Resize the image
+        img = ImageTk.PhotoImage(img)
+        
+        # Create a label to display the image
+        label = tk.Label(frame, image=img)
+        label.grid(in_=frame, row=row, column=col)
+        label.image = img  # Keep a reference!
+        
+        # Show the image
+        if col == 3:
+            # Start a new line after the third column
+            row += 1
+            col = 1
+        else:
+            # Within the same row
+            col += 1
+#create the main frame
+myframe = tk.Frame(root, relief=tk.GROOVE, bd=4, bg='#19161D')
+myframe.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.2)
+
+#create a canvas inside the main frame
+canvas = tk.Canvas(myframe, width=330, height=200, bg='#8A9296')
+frame = tk.Frame(canvas)
+
+#create a vertical scrollbar
+myscrollbar = tk.Scrollbar(myframe, orient="vertical", command=canvas.yview)
+canvas.configure(yscrollcommand=myscrollbar.set)
+
+#pack the scrollbar and canvas
+myscrollbar.pack(side="right", fill="y")
+canvas.pack(side="left")
+
+#attach the scrollable frame to the canvas
+canvas.create_window((0, 0), window=frame, anchor='nw')
+
+#bind the function to the frame's configuration event
+frame.bind("<Configure>", lambda event, canvas=canvas: on_frame_configure(canvas))
+
+#file selector button
+b1 = tk.Button(root, text='Upload Files', width=20, command=upload_file)
+b1.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.12)
 
 
 
-#other pages defined
-def input_page():
-    #new window
-    frame=tk.Frame(root,bg='lightblue')
-    frame.place(relx=0,rely=0.3,relheight=0.7,relwidth=1)
+#INSTRUCTION PAGE DETAILS
+        
+def instruction_page():
+    #create new window
+    new_window = tk.Toplevel(root)
+    new_window.title("How to use")
+    #sizing
+    width, height = new_window.winfo_screenwidth(), root.winfo_screenheight()
+    scaleW = int(width * 0.25)
+    scaleH = int(height * 0.4)
+    new_window.geometry(f"{scaleW}x{scaleH}+0+0")
+    new_window.maxsize(scaleW, scaleH)
+    new_window.minsize(scaleW, scaleH)
     
     #words to be displayed
-    label=tk.Label(frame,text='This will be the input page', bg="lightblue", font=('Helvetica bold', 12))
-    label.place(relx=10, rely=10)
-    
-    #rows/column
-    rows_input = Scale(frame, from_=1, to=5 )
-    rows_input.place(in_= label, relx=0.3, rely=0.7, anchor = CENTER)
- 
-    column_input = Scale(frame, from_=1, to=5, orient=HORIZONTAL)
-    column_input.place(relx=0.3, rely=0.7)
-    
-    
-    
-
-    
-'''  
-    #making grid with loops
-    empty_01=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    
-    for x in range(5):
-        for y in range(5):
-            print (x,y)
-            empty_01.place(relx=0.16, rely=0.45, relheight=0.05, relwidth=0.05)
-           
-    #empty boxes
-    #will make a loop later to save space and make it look better.
-    empty_01=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_01.place(relx=0.16,rely=0.45,relheight=0.05,relwidth=0.05)
-    
-    empty_02=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_02.place(relx=0.22,rely=0.45,relheight=0.05,relwidth=0.05)
-    
-    empty_03=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_03.place(relx=0.28,rely=0.45,relheight=0.05,relwidth=0.05)
-    
-    empty_04=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_04.place(relx=0.34,rely=0.45,relheight=0.05,relwidth=0.05)
-    
-    empty_05=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_05.place(relx=0.4,rely=0.45,relheight=0.05,relwidth=0.05)
-    
-    empty_06=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_06.place(relx=0.16,rely=0.51,relheight=0.05,relwidth=0.05)
-    
-    empty_07=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_07.place(relx=0.22,rely=0.51,relheight=0.05,relwidth=0.05)
-    
-    empty_08=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_08.place(relx=0.28,rely=0.51,relheight=0.05,relwidth=0.05)
-    
-    empty_09=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_09.place(relx=0.34,rely=0.51,relheight=0.05,relwidth=0.05)
-    
-    empty_10=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_10.place(relx=0.4,rely=0.51,relheight=0.05,relwidth=0.05)
-    
-    empty_11=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_11.place(relx=0.16,rely=0.57,relheight=0.05,relwidth=0.05)
-    
-    empty_12=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_12.place(relx=0.22,rely=0.57,relheight=0.05,relwidth=0.05)
-    
-    empty_13=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_13.place(relx=0.28,rely=0.57,relheight=0.05,relwidth=0.05)
-    
-    empty_14=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_14.place(relx=0.34,rely=0.57,relheight=0.05,relwidth=0.05)
-    
-    empty_15=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_15.place(relx=0.4,rely=0.57,relheight=0.05,relwidth=0.05)
-    
-    empty_16=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_16.place(relx=0.16,rely=0.63,relheight=0.05,relwidth=0.05)
-    
-    empty_17=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_17.place(relx=0.22,rely=0.63,relheight=0.05,relwidth=0.05)
-    
-    empty_18=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_18.place(relx=0.28,rely=0.63,relheight=0.05,relwidth=0.05)
-    
-    empty_19=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_19.place(relx=0.34,rely=0.63,relheight=0.05,relwidth=0.05)
-    
-    empty_20=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_20.place(relx=0.4,rely=0.63,relheight=0.05,relwidth=0.05)
-    
-    empty_21=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_21.place(relx=0.16,rely=0.69,relheight=0.05,relwidth=0.05)
-    
-    empty_22=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_22.place(relx=0.22,rely=0.69,relheight=0.05,relwidth=0.05)
-    
-    empty_23=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_23.place(relx=0.28,rely=0.69,relheight=0.05,relwidth=0.05)
-    
-    empty_24=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_24.place(relx=0.34,rely=0.69,relheight=0.05,relwidth=0.05)
-    
-    empty_25=tk.Frame(root, bg="steelblue", borderwidth=0.5)
-    empty_25.place(relx=0.4,rely=0.69,relheight=0.05,relwidth=0.05)
-'''
+    label=tk.Label(new_window,text='How to use', font=('Helvetica bold', 16))
+    label.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.02)    
 
 
-def cropping_page():
-    frame=tk.Frame(root,bg='lightblue')
-    frame.place(rely=0.2,relheight=height,relwidth=width)
-    label=tk.Label(frame,text='This will be the cropping page', bg="lightblue", font=('Helvetica bold', 12))
-    label.place(relx=0.05, rely=0.1)
-    '''
-    #save/load/exit feature might want to add later
-    def save():
-        #Code needs to be fixed later
-        save_frame=tk.Button(root)
-        save.add_command(label= "Save", comand=save)
-        save.place(relx=0, rely=0)
-        pass
- 
-    def load():
-        #code needs to be fixed later
-        load_frame=tk.Button(root)
-        load.add_command(label = "Load", command= load)
-        load.place(relx=0, rely=0)
-        pass   
- 
-    mainmenu = Menu(frame)
-    mainmenu.add_command(label = "Exit", command= root.destroy)
-    
-    root.config(menu = mainmenu)
-    '''
-    
-    
-    
-def instruction_page():
-    frame=tk.Frame(root,bg='lightblue')
-    frame.place(rely=0.2,relheight=height,relwidth=width)
-    label=tk.Label(frame,text='This will be the instruction page', bg="lightblue", font=('Helvetica bold', 12))
-    label.place(relx=width/1, rely=width/1)
 
-#create font object for boldness
-label_font = font.Font(weight="bold")
+#INNICIATION OF PLACEMENTS
 
-#creating widget
-button_quit = Button(root, text= "Exit Program", command= root.quit, bg="maroon", fg="white")
-welcome_lab = Label(root, text= "Welcome to the COLadge", bg="lightgray", font=('Helvetica bold', 16,"bold"))
-input_page = Button(root, text="Input Page", font=5, bd=0.5, bg="cadetblue", fg="black", command=input_page)
-cropping_page = Button(root, text="Image Cropping", font=9, bd=0.5, bg="cadetblue", fg="black", command=cropping_page)
-instruction_page = Button(root, text="How to use", font=9, bd=0.5, bg="cadetblue", fg="black", command=instruction_page)
+#welcome label
+welcome_lab = tk.Label(root, text="COLadge", bg='#232A2D', fg='white',  font=('Helvetica bold', 16, "bold"))
+welcome_lab.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.04)
 
-#to display on screen
-button_quit.pack(side = tk.TOP)
-welcome_lab.pack(side = tk.TOP, pady=10)
-
-#display buttons for different pages
-input_page.pack(side=tk.LEFT, anchor=tk.N, ipadx=.001, ipady=.1, padx=5)
-cropping_page.pack(side=tk.LEFT, anchor=tk.N, ipadx=.001, ipady=.1, padx=15)
-instruction_page.pack(side=tk.RIGHT, anchor=tk.N, ipadx=.001, ipady=.1, padx=5)
+#how to Use button
+instruction_page = tk.Button(root, text="?", bd=0.5, bg="steelblue", fg="black", width=1, command=instruction_page)
+instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 
 
-#calling main loop
 root.mainloop()
-
