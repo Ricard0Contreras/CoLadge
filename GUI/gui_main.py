@@ -21,6 +21,7 @@ scaleH = int(height * 0.6)
 root.geometry(f"{scaleW}x{scaleH}+0+0")
 root.maxsize(scaleW, scaleH)
 root.minsize(scaleW, scaleH)
+globalFileList = []
 
 
 #INPUT PAGE DETAILS
@@ -66,15 +67,20 @@ def on_frame_configure(canvas):
     """Reset the scroll region to encompass the inner frame."""
     canvas.configure(scrollregion=canvas.bbox("all"))
 
-def upload_file():
+def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
     filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
     
     # Start from row 5 and column 1
     row, col = 5, 1
-    
-    for filename in filenames:
-        img = Image.open(filename)
+
+    for files in filenames:
+        fileList.append(files)
+        print(fileList)
+
+    for files in fileList:
+
+        img = Image.open(files)
         img = img.resize((100, 100))  # Resize the image
         img = ImageTk.PhotoImage(img)
         
@@ -91,6 +97,9 @@ def upload_file():
         else:
             # Within the same row
             col += 1
+
+
+
 #create the main frame
 myframe = tk.Frame(root, relief=tk.GROOVE, bd=4, bg='#19161D')
 myframe.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.2)
@@ -114,7 +123,7 @@ canvas.create_window((0, 0), window=frame, anchor='nw')
 frame.bind("<Configure>", lambda event, canvas=canvas: on_frame_configure(canvas))
 
 #file selector button
-b1 = tk.Button(root, text='Upload Files', width=20, command=upload_file)
+b1 = tk.Button(root, text='Upload Files', width=20, command= lambda: upload_file(globalFileList))
 b1.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.12)
 
 
