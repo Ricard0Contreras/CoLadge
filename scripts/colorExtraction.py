@@ -1,7 +1,7 @@
 import fast_colorthief
 
 
-def getColorPallete(path):
+def getColor(path):
     # path of the image of
     image_path = path
 

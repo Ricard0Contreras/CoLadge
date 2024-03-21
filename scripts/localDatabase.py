@@ -88,9 +88,11 @@ def returnColors(uniqueKey):  # based on the uniqueKey inputed return all the co
 
         for n in range(len(listColor)):
             listColor[n] = str(listColor[n]).replace("[", "")
+            listColor[n] = str(listColor[n]).replace("(", "")
             listColor[n] = str(listColor[n]).replace("'", "")
             listColor[n] = str(listColor[n]).replace('"', "")
             listColor[n] = str(listColor[n]).replace("]", "")
+            listColor[n] = str(listColor[n]).replace(")", "")
             listColor[n] = listColor[n].strip()
 
         return listColor
