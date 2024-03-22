@@ -8,6 +8,9 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 from tkinter.messagebox import askyesno
 from tkinter import Scale
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from scripts import testing
 
 root = tk.Tk()
 
@@ -48,18 +51,19 @@ for row_index, row in enumerate(labelRows):
         row_boxes.append(box)
         empty_boxes.append(row_boxes)
 
-#update label for rows x columns
-def update_label():
-    selected_rows = rows_input.get()
-    selected_columns = column_input.get()
-    label.config(text=f"{selected_rows} x {selected_columns}")
+#Remember X and Y and pass data
+def pass_data(imageList):
+    x_columns = x_input.get()
+    y_rows = y_input.get()
+    testing.makeCollage(imageList, x_columns, y_rows)
+
 
 #label to display rows x columns before you confirm an update
-label = tk.Label(root, text="1 x 1", width=8, height=2, bg='#232A2D', fg='white', font=10)
-label.place(in_=frame, anchor='n', x=scaleW * 0.72, y=scaleH * 0.77)
+#label = tk.Label(root, text="1 x 1", width=8, height=2, bg='#232A2D', fg='white', font=10)
+#label.place(in_=frame, anchor='n', x=scaleW * 0.72, y=scaleH * 0.77)
 
 #update button for rows x columns
-update_button = tk.Button(root, text="Update", command=update_label)
+update_button = tk.Button(root, text="Make CoLadge", command= lambda: pass_data(globalFileList))
 update_button.place(in_=frame, anchor='n', x=scaleW * 0.93, y=scaleH * 0.813)
 
 #file selector            
@@ -76,7 +80,6 @@ def upload_file(fileList):
 
     for files in filenames:
         fileList.append(files)
-        print(fileList)
 
     for files in fileList:
 
