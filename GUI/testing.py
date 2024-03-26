@@ -30,25 +30,34 @@ class App(tk.Tk):
         self.column_scale.pack()
 
     def update_grid(self, event=None):
+
+        #Sets whole grid to background color
+        self.recR = 20
+        self.recC = 20
+        self.cellwidth = 25
+        self.cellheight = 25
+        self.rect = {}
+        for column in range(self.recR):
+            for row in range(self.recC):
+                x1 = column * self.cellwidth
+                y1 = row * self.cellheight
+                x2 = x1 + self.cellwidth
+                y2 = y1 + self.cellheight
+                self.rect[row, column] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="blue", tags="rect")
+
         # Update grid based on scale values
         self.rows = self.row_scale.get()
         self.columns = self.column_scale.get()
 
         for column in range(self.columns):
             for row in range(self.rows):
+                print(column)
+                print(row)
                 x1 = column * self.cellwidth
                 y1 = row * self.cellheight
                 x2 = x1 + self.cellwidth
                 y2 = y1 + self.cellheight
                 self.rect[row, column] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="green", tags="rect")
-        
-        for column in range(self.columns):
-            for row in range(self.rows):
-                x1 = column * self.cellwidth
-                y1 = row * self.cellheight
-                x2 = y1 - self.cellwidth
-                y2 = y1 - self.cellheight
-                self.rect[row, column] = self.canvas.create_rectangle(x1, y1, x2, y2, fill="red", tags="rect")
 
 if __name__ == "__main__":
     app = App()
