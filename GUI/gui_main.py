@@ -6,11 +6,13 @@ import sqlite3
 from tkinter.filedialog import askopenfile
 from tkinter import filedialog
 from PIL import Image, ImageTk
+from PIL import ImageDraw,ImageFont
 from tkinter.messagebox import askyesno
 from tkinter import Scale
 import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scripts import testing
+#from tkinter.tix import *
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#from scripts import testing
 
 root = tk.Tk()
 
@@ -25,6 +27,10 @@ root.geometry(f"{scaleW}x{scaleH}+0+0")
 root.maxsize(scaleW, scaleH)
 root.minsize(scaleW, scaleH)
 globalFileList = []
+labelsList = []
+
+#tip = tixBalloon(root)
+
 
 
 #INPUT PAGE DETAILS
@@ -55,7 +61,7 @@ for row_index, row in enumerate(labelRows):
 def pass_data(imageList):
     x_columns = x_input.get()
     y_rows = y_input.get()
-    testing.makeCollage(imageList, x_columns, y_rows)
+    #testing.makeCollage(imageList, x_columns, y_rows)
 
 
 #label to display rows x columns before you confirm an update
@@ -80,17 +86,24 @@ def upload_file(fileList):
 
     for files in filenames:
         fileList.append(files)
+    print(fileList)
 
-    for files in fileList:
+    for i in range(len(fileList)):
 
-        img = Image.open(files)
+        img = Image.open(fileList[i])
         img = img.resize((100, 100))  # Resize the image
         img = ImageTk.PhotoImage(img)
         
         # Create a label to display the image
-        label = tk.Label(frame, image=img)
+        label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center")
         label.grid(in_=frame, row=row, column=col)
         label.image = img  # Keep a reference!
+        
+        label.index = i
+        label.bind("<Button-1>",lambda event, lab = label: delete_file(fileList, lab))
+        label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
+        label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
+        labelsList.append(label)
         
         # Show the image
         if col == 3:
@@ -101,6 +114,64 @@ def upload_file(fileList):
             # Within the same row
             col += 1
 
+def delete_file(fileList, label):
+
+    if label.index < len(fileList):
+        for i in range(label.index + 1, len(labelsList)):
+            labelsList[i].index -= 1
+        del fileList[label.index]
+        del labelsList[label.index]
+        label.destroy()
+        update_labels()
+
+def update_labels():
+    row, col = 5, 1
+    for label in labelsList:
+        index = label.index
+        image = label.image
+        label.grid(in_=frame, row=row, column=col)
+        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
+        label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
+        label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
+        if col == 3:
+            # Start a new line after the third column
+            row += 1
+            col = 1
+        else:
+            # Within the same row
+            col += 1
+
+def changeImage(label):
+
+    label.config(text="X", foreground="red")
+
+def returnImage(label):
+    label.config(text="")
+    
+
+class CustomTooltip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip_visible = False
+
+        # Bind events to show/hide the tooltip
+        widget.bind("<Enter>", self.show_tooltip)
+        widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event):
+        if not self.tooltip_visible:
+            x, y, _, _ = self.widget.bbox("insert")
+            x += self.widget.winfo_rootx() + 25
+            y += self.widget.winfo_rooty() + 25
+            self.tooltip_label = tk.Label(text=self.text, background="lightyellow", relief="solid", borderwidth=1)
+            self.tooltip_label.place(x=x, y=y)
+            self.tooltip_visible = True
+
+    def hide_tooltip(self, event):
+        if self.tooltip_visible:
+            self.tooltip_label.place_forget()
+            self.tooltip_visible = False
 
 
 #create the main frame
@@ -160,6 +231,12 @@ welcome_lab.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.04)
 #how to Use button
 instruction_page = tk.Button(root, text="?", bd=0.5, bg="steelblue", fg="black", width=1, command=instruction_page)
 instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
+
+#Displays message when mouse is hovered over button
+if __name__ == "__main__":
+    tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
+    t = CustomTooltip(b1, "Allows user to upload images")
+    tu = CustomTooltip(update_button, "Begin creating collage")
 
 
 root.mainloop()
