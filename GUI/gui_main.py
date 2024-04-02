@@ -11,7 +11,8 @@ from tkinter.messagebox import askyesno
 from tkinter import Scale
 import os, sys
 #from tkinter.tix import *
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tkinter.ttk import *
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 #from scripts import testing
 
 root = tk.Tk()
@@ -29,50 +30,85 @@ root.minsize(scaleW, scaleH)
 globalFileList = []
 labelsList = []
 
-#tip = tixBalloon(root)
-
-
 
 #INPUT PAGE DETAILS
 
 #new window
 frame=tk.Frame(root, bg='#232A2D')
-frame.place(anchor='nw', y=scaleH * 0.13 , width= scaleW, height= scaleH * 0.9)
-    
-#rows/column
-rows_input = Scale(frame, from_=1, to=50, activebackground='lightpink', troughcolor='lightcoral', bg='darkseagreen4')
-rows_input.place(in_= frame, anchor='n', x=scaleW * 0.09, y=scaleH * 0.502,  height= scaleH * 0.25, width=scaleW * 0.095)
- 
-column_input = Scale(frame, from_=1, to=50, orient=HORIZONTAL, activebackground='lightpink', troughcolor='lightcoral', bg='darkseagreen4')
-column_input.place(in_=frame, anchor='n', x=scaleW * 0.37, y=scaleH * 0.775, width= scaleW * 0.4, height= scaleH * 0.08, relheight=0.001)
-    
-#define number of rows and columns
-labelRows = [[' ' for _ in range(5)] for _ in range(5)]
-empty_boxes = []
-for row_index, row in enumerate(labelRows):
-    row_boxes = []
-    for cell_index, cell in enumerate(row):
-        box = tk.Label(root, text=cell, width=2, height=1, bg='pink')
-        box.place(x=cell_index * (scaleW * 0.055) + 130, y=row_index * (scaleH * 0.043) + 330, anchor='n')
-        row_boxes.append(box)
-        empty_boxes.append(row_boxes)
+frame.place(x=25, y=25)
+rect = {}
+rows = 20
+columns = 20
+cellwidth = 0
+cellheight = 0
 
-#Remember X and Y and pass data
+def create_canvas():
+    global canvas
+    canvas = tk.Canvas(root, width=scaleW - 64.8, height=scaleH - 364, borderwidth=0, highlightthickness=0)
+    canvas.place(anchor='n', x=scaleW * 0.52, y=scaleH * 0.618)
+    
+def create_rectangles():
+    global cellwidth, cellheight
+    cellwidth = (scaleW - 50) // columns
+    cellheight = (scaleH - 300) // rows
+
+    for column in range(columns):
+        for row in range(rows):
+            x1 = column * cellwidth
+            y1 = row * cellheight
+            x2 = x1 + cellwidth
+            y2 = y1 + cellheight
+            rect[row, column] = canvas.create_rectangle(x1, y1, x2, y2, fill="blue", tags="rect")
+
+def update_grid(event=None):
+    global rows, columns, cellwidth, cellheight
+
+    #create rectangles for each cell
+    for column in range(columns):
+        for row in range(rows):
+            x1 = column * cellwidth
+            y1 = row * cellheight
+            x2 = x1 + cellwidth
+            y2 = y1 + cellheight
+            rect[row, column] = canvas.create_rectangle(x1, y1, x2, y2, fill="blue", tags="rect")
+
+    #update grid based on scale values
+    rows = row_scale.get()
+    columns = column_scale.get()
+
+    #create new rectangles with updated grid size
+    for column in range(columns):
+        for row in range(rows):
+            x1 = column * cellwidth
+            y1 = row * cellheight
+            x2 = x1 + cellwidth
+            y2 = y1 + cellheight
+            rect[row, column] = canvas.create_rectangle(x1, y1, x2, y2, fill="green", tags="rect")
+
+def create_scales():
+    global row_scale, column_scale
+    row_scale = tk.Scale(root, from_=1, to=rows,activebackground='lightpink', troughcolor='lightcoral', bg='darkseagreen4', command=update_grid)
+    row_scale.place(anchor='n', x=scaleW * 0.052, y=scaleH * 0.657, height= scaleH * 0.25, width=scaleW * 0.095)
+    column_scale = tk.Scale(root, from_=1, to=columns, orient="horizontal", activebackground='lightpink', troughcolor='lightcoral', bg='darkseagreen4', command=update_grid)
+    column_scale.place(anchor='n', x=scaleW * 0.4, y=scaleH * 0.915, width= scaleW * 0.4, height= scaleH * 0.08, relheight=0.001)
+
+def main():
+    create_canvas()
+    create_rectangles()
+    create_scales()
+    
+#remember X/Y and pass data
 def pass_data(imageList):
-    x_columns = x_input.get()
-    y_rows = y_input.get()
-    #testing.makeCollage(imageList, x_columns, y_rows)
-
-
-#label to display rows x columns before you confirm an update
-#label = tk.Label(root, text="1 x 1", width=8, height=2, bg='#232A2D', fg='white', font=10)
-#label.place(in_=frame, anchor='n', x=scaleW * 0.72, y=scaleH * 0.77)
+    x_input = row_scale.get()
+    y_input = column_scale.get()
+    print(f"Selected rows: {x_input}")
+    print(f"Selected columns: {y_input}")
 
 #update button for rows x columns
 update_button = tk.Button(root, text="Make CoLadge", command= lambda: pass_data(globalFileList))
-update_button.place(in_=frame, anchor='n', x=scaleW * 0.93, y=scaleH * 0.813)
+update_button.place(in_=frame, anchor='n', x=scaleW * 0.8, y=scaleH * 0.88)
 
-#file selector            
+#FILE SELECTOR           
 def on_frame_configure(canvas):
     """Reset the scroll region to encompass the inner frame."""
     canvas.configure(scrollregion=canvas.bbox("all"))
@@ -86,7 +122,7 @@ def upload_file(fileList):
 
     for files in filenames:
         fileList.append(files)
-    print(fileList)
+    #print(fileList)
 
     for i in range(len(fileList)):
 
@@ -200,25 +236,56 @@ frame.bind("<Configure>", lambda event, canvas=canvas: on_frame_configure(canvas
 b1 = tk.Button(root, text='Upload Files', width=20, command= lambda: upload_file(globalFileList))
 b1.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.12)
 
+# INSTRUCTION PAGE DETAILS
 
-
-#INSTRUCTION PAGE DETAILS
-        
 def instruction_page():
     #create new window
     new_window = tk.Toplevel(root)
     new_window.title("How to use")
+    
     #sizing
     width, height = new_window.winfo_screenwidth(), root.winfo_screenheight()
     scaleW = int(width * 0.25)
-    scaleH = int(height * 0.4)
+    scaleH = int(height * 0.49)
     new_window.geometry(f"{scaleW}x{scaleH}+0+0")
     new_window.maxsize(scaleW, scaleH)
     new_window.minsize(scaleW, scaleH)
     
-    #words to be displayed
-    label=tk.Label(new_window,text='How to use', font=('Helvetica bold', 16))
-    label.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.02)    
+    #text for instructions
+    instruction_body = tk.Text(new_window, wrap="word", bg="#232A2D", fg="white", font=('Helvetica', 9), height=30)
+    instruction_body.tag_configure("underline", underline=True)
+    instruction_body.tag_configure("bold", font=('Helvetica', 9, 'bold'))
+#for bold and underline, I have to know the indexes for the words I want bolded and underlined. Haven't done this yet.
+    instruction_body.insert(tk.END, """
+                                 CoLodge User Manuel
+
+Name
+        Color Colloge
+                                    
+Description
+        User friendly program used to create a collage of
+        images that are automatically sorted by their colors.
+                                    
+Using Input Form
+        Using Images
+               - Add images by clicking the 'Upload Files' button.
+                 You will be able to scroll through the images you
+                 add by using the scroll bar to the right.
+        Deleting Images
+               - Hover over an image you wish to remove and
+                 click on the red X that appears to delete.
+        Selecting Collage Size
+               - Use the scrollers on the bottom half of the
+                 window to change your rows (x) and columns (y)
+                 to customize what final size you would like
+                 your collage to be.
+        Create Collage
+               - After images and size variable criteria has
+                 been met, click the 'Make Collage' button to
+                 begin compiling your color collage.""")
+                 
+    instruction_body.config(state=tk.DISABLED)
+    instruction_body.pack()
 
 
 
@@ -232,11 +299,6 @@ welcome_lab.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.04)
 instruction_page = tk.Button(root, text="?", bd=0.5, bg="steelblue", fg="black", width=1, command=instruction_page)
 instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 
-#Displays message when mouse is hovered over button
 if __name__ == "__main__":
-    tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
-    t = CustomTooltip(b1, "Allows user to upload images")
-    tu = CustomTooltip(update_button, "Begin creating collage")
-
-
-root.mainloop()
+    main()
+    root.mainloop()
