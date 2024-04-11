@@ -15,6 +15,7 @@ from tkinter.ttk import *
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 #from scripts import testing
 
+
 root = tk.Tk()
 
 root.title('COLadge')
@@ -41,6 +42,7 @@ rows = 20
 columns = 20
 cellwidth = 0
 cellheight = 0
+
 
 def create_canvas():
     global canvas
@@ -116,17 +118,20 @@ def on_frame_configure(canvas):
 def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
     filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
-    
+
     # Start from row 5 and column 1
     row, col = 5, 1
-
+    row += int(len(globalFileList) / 3)
+    col += len(globalFileList) % 3
+    
     for files in filenames:
-        fileList.append(files)
-    #print(fileList)
+        globalFileList.append(files)
+    
+    labelsListLen = len(labelsList)
 
-    for i in range(len(fileList)):
+    for i in range(len(filenames)):
 
-        img = Image.open(fileList[i])
+        img = Image.open(filenames[i])
         img = img.resize((100, 100))  # Resize the image
         img = ImageTk.PhotoImage(img)
         
@@ -134,12 +139,16 @@ def upload_file(fileList):
         label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center")
         label.grid(in_=frame, row=row, column=col)
         label.image = img  # Keep a reference!
-        
-        label.index = i
-        label.bind("<Button-1>",lambda event, lab = label: delete_file(fileList, lab))
+        label.index = i + labelsListLen
+        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
         label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
         label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
         labelsList.append(label)
+        #Displays the name of all the labels and remove the ones that have been deleted
+        print("Number of pictures in Label List: ", len(labelsList))
+        print("Upload File: " + str(labelsList))
+        print("Number of pictures in file List: ", len(globalFileList))
+        print()
         
         # Show the image
         if col == 3:
@@ -152,23 +161,46 @@ def upload_file(fileList):
 
 def delete_file(fileList, label):
 
-    if label.index < len(fileList):
-        for i in range(label.index + 1, len(labelsList)):
-            labelsList[i].index -= 1
-        del fileList[label.index]
-        del labelsList[label.index]
-        label.destroy()
-        update_labels()
+    #if label.index < len(fileList):
+    
+    # Deletes the file name of the image deleted
+    index = label.index
+    label.destroy()
+
+    for i in range(index, len(labelsList)):
+        labelsList[i].index -= 1
+    del fileList[index]
+    del labelsList[index]
+
+    print("Delete File: " + str(labelsList))
+    print()
+    update_labels()
 
 def update_labels():
+    global labelsList
+    
+    # Start from row 5 and column 1
     row, col = 5, 1
+    
+    tempLabelsList = []
+    tempIndex = 0
+    
+    print("Update Labels: " + str(labelsList))
+    print()
     for label in labelsList:
-        index = label.index
+        
         image = label.image
-        label.grid(in_=frame, row=row, column=col)
-        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
-        label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
-        label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
+        
+        newLabel = tk.Label(frame, text="", font=("Arial", 70), image=image, compound="center")
+        newLabel.grid(in_=frame, row=row, column=col)
+        newLabel.image = image  # Keep a reference!
+        
+        newLabel.index = tempIndex
+        newLabel.bind("<Button-1>",lambda event, lab = newLabel: delete_file(globalFileList, lab))
+        newLabel.bind("<Enter>", lambda event, lab=newLabel: changeImage(lab))
+        newLabel.bind("<Leave>", lambda event, lab=newLabel: returnImage(lab))
+        tempLabelsList.append(newLabel)
+        
         if col == 3:
             # Start a new line after the third column
             row += 1
@@ -176,7 +208,19 @@ def update_labels():
         else:
             # Within the same row
             col += 1
+        
+        tempIndex += 1
+      
+    
+    for i in range(len(labelsList) - 1, -1, -1):
+        label = labelsList[i]
+        label.destroy()
+        del labelsList[i]
 
+    
+    for lab in tempLabelsList:
+        labelsList.append(lab)
+    
 def changeImage(label):
 
     label.config(text="X", foreground="red")
@@ -300,5 +344,8 @@ instruction_page = tk.Button(root, text="?", bd=0.5, bg="steelblue", fg="black",
 instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 
 if __name__ == "__main__":
+    tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
+    t = CustomTooltip(b1, "Allows user to upload images")
+    tu = CustomTooltip(update_button, "Begin creating collage")
     main()
     root.mainloop()
