@@ -134,14 +134,15 @@ def upload_file(fileList):
 
     labelsListLen = len(labelsList)
 
-    for i in range(len(filenames[i])):
+    for i in range(len(filenames)):
         img = Image.open(filenames[i])
         img = img.resize((100, 100))  #resize the image
         img = ImageTk.PhotoImage(img)
-        label.index = i + labelsListLen
-        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
+
         #create a label to display the image
         label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center")
+        label.index = i + labelsListLen
+        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
         label.grid(in_=frame, row=row, column=col)
         label.image = img  # Keep a reference!
         label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
@@ -179,42 +180,49 @@ def delete_file(fileList, label):
 
 def update_labels():
     global labelsList
-    #start from row 5 and column 1
+
+    # Start from row 5 and column 1
     row, col = 5, 1
+
     tempLabelsList = []
     tempIndex = 0
 
     print("Update Labels: " + str(labelsList))
     print()
     for label in labelsList:
+        
         image = label.image
+        
         newLabel = tk.Label(frame, text="", font=("Arial", 70), image=image, compound="center")
         newLabel.grid(in_=frame, row=row, column=col)
         newLabel.image = image  # Keep a reference!
-
+        
         newLabel.index = tempIndex
         newLabel.bind("<Button-1>",lambda event, lab = newLabel: delete_file(globalFileList, lab))
         newLabel.bind("<Enter>", lambda event, lab=newLabel: changeImage(lab))
         newLabel.bind("<Leave>", lambda event, lab=newLabel: returnImage(lab))
         tempLabelsList.append(newLabel)
-            
+        
         if col == 3:
-            #start a new line after the third column
+            # Start a new line after the third column
             row += 1
             col = 1
         else:
-            #within the same row
+            # Within the same row
             col += 1
-            tempIndex += 1
+        
+        tempIndex += 1
+      
+
+    for i in range(len(labelsList) - 1, -1, -1):
+        label = labelsList[i]
+        label.destroy()
+        del labelsList[i]
 
 
-        for i in range(len(labelsList) - 1, -1, -1):
-            label = labelsList[i]
-            label.destroy()
-            del labelsList[i]
-            
-        for lab in tempLabelsList:
-            labelsList.append(lab)
+    for lab in tempLabelsList:
+        labelsList.append(lab)
+    
 
 def changeImage(label):
     label.config(text="X", foreground="red")
@@ -373,7 +381,7 @@ root = tk.Tk()
 root.title('COLadge')
 root.config(bg='#36393e')
 #icon path
-icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "COLadge_Icon.ico")
+#icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "COLadge_Icon.ico")
 
 #program dimensions
 scaleW = int(root.winfo_screenwidth() * 0.3)
@@ -410,7 +418,7 @@ instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 show_welcome_screen()
 
 if __name__ == "__main__":
-    root.iconbitmap(icon_path)
+#    root.iconbitmap(icon_path)
     # file selector button
     b1 = tk.Button(root, text='Upload Files', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
     b1.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.12)
