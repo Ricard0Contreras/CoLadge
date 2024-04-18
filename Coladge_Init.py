@@ -112,7 +112,7 @@ def pass_data(imageList):
     y_input = column_scale.get()
     print(f"Selected rows: {x_input}")
     print(f"Selected columns: {y_input}")
-    testing.makeCollage(imageList, x_input, y_input)
+    miojo.makeCollage(imageList, x_input, y_input)
 
 
 #FILE SELECTOR           
