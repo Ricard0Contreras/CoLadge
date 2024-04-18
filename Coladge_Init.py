@@ -2,7 +2,7 @@ from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
-import os
+import os, sys
 import sqlite3
 from tkinter.filedialog import askopenfile
 from tkinter import filedialog
@@ -10,11 +10,9 @@ from PIL import Image, ImageTk
 from PIL import ImageDraw,ImageFont
 from tkinter.messagebox import askyesno
 from tkinter import Scale
-import os, sys
 #from tkinter.tix import *
 from tkinter.ttk import *
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-#from scripts import testing
+from scripts import miojo
 from tkinter import messagebox
 import math
 
@@ -114,6 +112,8 @@ def pass_data(imageList):
     y_input = column_scale.get()
     print(f"Selected rows: {x_input}")
     print(f"Selected columns: {y_input}")
+    testing.makeCollage(imageList, x_input, y_input)
+
 
 #FILE SELECTOR           
 def on_frame_configure(canvas):
@@ -298,10 +298,11 @@ def instruction_page():
     #create new window
     new_window = tk.Toplevel(root)
     new_window.title("How to use")
-    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "COLadge_Icon.ico")
+    #icon_path = PhotoImage(file = 'GUI' + os.sep + 'Icon.ico')
+    #icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.ico")
 
     #set window icon
-    new_window.iconbitmap(icon_path)
+    #new_window.iconbitmap(icon_path)
 
     #sizing
     width, height = new_window.winfo_screenwidth(), root.winfo_screenheight()
@@ -380,8 +381,10 @@ def main():
 root = tk.Tk()
 root.title('COLadge')
 root.config(bg='#36393e')
+
 #icon path
-#icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "COLadge_Icon.ico")
+#icon_path = 'GUI' + os.sep + 'Icon.ico'
+#icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.ico")
 
 #program dimensions
 scaleW = int(root.winfo_screenwidth() * 0.3)
@@ -418,7 +421,7 @@ instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 show_welcome_screen()
 
 if __name__ == "__main__":
-#    root.iconbitmap(icon_path)
+    #root.iconbitmap(icon_path)
     # file selector button
     b1 = tk.Button(root, text='Upload Files', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
     b1.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.12)
