@@ -108,8 +108,8 @@ def create_scales():
     
 #remember X/Y and pass data
 def pass_data(imageList):
-    x_input = row_scale.get()
-    y_input = column_scale.get()
+    x_input = column_scale.get()
+    y_input = row_scale.get()
     print(f"Selected rows: {x_input}")
     print(f"Selected columns: {y_input}")
     miojo.makeCollage(imageList, x_input, y_input)
