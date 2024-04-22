@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-# global db of project
+# global db of program
 localdbFile = 'cache.db'
 
 
@@ -19,7 +19,7 @@ def create_connection(): # Use as a template for other DB functions
             con.close()
 
 
-def addValue(key, valueColor):  # addValue('Flowers', 'Yellow', 'White', 'Green', 'Purple', 'Orange', 'Red')
+def addValue(key, valueColor):  # addValue('Flowers', 'Yellow', 'White', 'Green')
     try:
         con = sqlite3.connect('database' + os.sep + localdbFile)
         cur = con.cursor()

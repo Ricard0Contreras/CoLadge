@@ -1,21 +1,18 @@
 from scripts import localDatabase, resize, colorExtraction, canva
-from math import sqrt
 from scipy.spatial import ConvexHull
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
 from scipy.optimize import fsolve
 from PIL import Image 
+import numpy as np
 import cv2 as cv
-import os
-import re
+import os, re, sys, subprocess
 
 #plot point in 3d to represent gradient and color
 from mpl_toolkits import mplot3d
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('TkAgg')
-
 
 
 def find_point_on_line(ex1, ex2, d): # Calculates the point of such distances 
@@ -33,20 +30,20 @@ def find_point_on_line(ex1, ex2, d): # Calculates the point of such distances
     return point
 
 
-def find_best_distances(arr1, arr2):
+def find_best_distances(arr1, picArr):
     # Reshape the arrays into 2D (n,3) arrays
     arr1_reshaped = arr1.reshape(-1, 3)
-    arr2_reshaped = arr2.reshape(-1, 3)
+    picArr_reshaped = picArr.reshape(-1, 3)
 
     # Compute the distance matrix
-    distance_matrix = cdist(arr1_reshaped, arr2_reshaped)
+    distance_matrix = cdist(arr1_reshaped, picArr_reshaped)
 
     # Use the Hungarian algorithm to find the optimal assignment
     row_ind, col_ind = linear_sum_assignment(distance_matrix)
 
     # Return the corresponding pairs and the total distance
     pairs = list(zip(row_ind, col_ind))
-    #total_distance = distance_matrix[row_ind, col_ind].sum()
+    #total_distance = distance_matrix[row_ind, col_ind].sum() # Debug
 
     return pairs # total_distance
 
@@ -55,7 +52,7 @@ def find_distance(p1,p2): # finds the distance between two points
    val = 0
    for n in range(len(p1)):
       val += (p1[n] - p2[n])**2
-   return sqrt(val)
+   return np.sqrt(val)
 
 
 def find_closest_non_zero(array, index, direction):
@@ -83,16 +80,16 @@ def makeCollage(picList, xPics, yPics):
    #total amount of pictures
    picN = len(picList)
 
-   # max X value of canvas
+   # max X count of pics on canvas
    canvaXMax = xPics
-   # max Y value of canvas
+   # max Y count of pics on canvas
    canvaYMax = yPics
 
    # size (Pixels) of cached source pics
    sizePics = 1000
 
    # List of path of cached pics
-   picHashList = []
+   picHashList = [] 
 
    canva.makeCanva(canvaXMax, canvaYMax, sizePics) # make the canva (X, Y, Size of squares)
    canvaImg = cv.imread('result.png') # opening canva, name hardcoded on scripts/canva.py 
@@ -109,21 +106,30 @@ def makeCollage(picList, xPics, yPics):
    for image in picList:
       procImg = image # pic that will processed
 
-      picHash = str(resize.calSha1(procImg)) # process the hash of pic
-      picHashList.append(picHash+'.png') # Saves path of all pics that will be used
-
-      if localDatabase.keyInDB(picHash): # search the DB for the hash of the pic, if it is there then add to canva
-         print(str(procImg) + ' is already in cache & db \n')# + 'putting '+ str(procImg) + ' on', x, ' ', y)
+      if '.cache.png' in procImg:
+         picHash = procImg.replace(cachePath, '') 
+         picHash = picHash.replace('.cache.png', '')
+         picHashList.append(picHash+'.cache.png') # Saves path of all pics that will be used
          picColors = localDatabase.returnColors(picHash) # Stores the colors of that pic in a list, in total 5
-         print(picColors)
          cordDat.append(picColors) # adds the cords to the list
 
-      else: # else cache pic and add to canva 
-         resize.imgRemux(sizePics, procImg)
-         currentColor = colorExtraction.getColor(cachePath + picHash + '.png')
-         localDatabase.addValue(picHash, currentColor) # calculates the colors and add all the data to the db
-         cordDat.append(currentColor) # adds the cords to the list
-         print('added ' + str(procImg) + ' to cache & db \n')
+
+      else:
+           picHash = str(resize.calSha1(procImg)) # process the hash of pic
+           picHashList.append(picHash+'.cache.png') # Saves path of all pics that will be used
+
+           if localDatabase.keyInDB(picHash): # search the DB for the hash of the pic, if it is there then add to canva
+               print(str(procImg) + ' is already in cache & db \n')
+               picColors = localDatabase.returnColors(picHash) # Stores the colors of that pic in a list, in total 5
+               print(picColors)
+               cordDat.append(picColors) # adds the cords to the list
+
+           else: # else cache pic and add to canva 
+               resize.imgRemux(sizePics, procImg)
+               currentColor = colorExtraction.getColor(cachePath + picHash + '.cache.png')
+               localDatabase.addValue(picHash, currentColor) # calculates the colors and add all the data to the db
+               cordDat.append(currentColor) # adds the cords to the list
+               print('added ' + str(procImg) + ' to cache & db \n')
 
 
    # lists holding the cordinate array of all pictures
@@ -137,7 +143,7 @@ def makeCollage(picList, xPics, yPics):
    for n in range(len(xDat)):
       colors.append('#%02x%02x%02x' % (int(xDat[n]),int(yDat[n]),int(zDat[n])))
 
-   print()
+   print() # Debug
    print('2D array', cordDat)
    print('Colors array', colors)
 
@@ -158,19 +164,14 @@ def makeCollage(picList, xPics, yPics):
    bestpair = np.unravel_index(hdist.argmax(), hdist.shape)
    ex1 = hullpoints[bestpair[1]]
    ex2 = hullpoints[bestpair[0]]
-   print('Two corner extremas ',ex1,ex2)
+   print('Two corner extremas ',ex1,ex2) # Debug
    print()
 
-   disExtrema1 = [] # Array of all distances 
-   disExtrema2 = []
-   disLine = []
+   disExtrema = [] # List of all distances from p 
 
 
    for n in range(len(xDat)):
-      disExtrema1.append(sqrt((xDat[n] - ex1[0])**2 + (yDat[n] - ex1[1])**2 + (zDat[n] - ex1[2])**2))
-      disExtrema2.append(sqrt((xDat[n] - ex2[0])**2 + (yDat[n] - ex2[1])**2 + (zDat[n] - ex2[2])**2))
-      disLine.append(abs((ex2[1]-ex1[1])*xDat[n] + (ex1[0]-ex2[0])*yDat[n] + (ex2[0]*ex1[1] - ex1[0]*ex2[1]))/
-                     sqrt((ex2[0]-ex1[0])**2 + (ex2[1]-ex1[1])**2 + (ex2[2]-ex1[2])**2))
+      disExtrema.append(np.sqrt((xDat[n] - ex1[0])**2 + (yDat[n] - ex1[1])**2 + (zDat[n] - ex1[2])**2))
 
 
    # 2d array that holds the points of the grid of the collage
@@ -178,12 +179,12 @@ def makeCollage(picList, xPics, yPics):
    gArr[:,:] = 0
    gArr = gArr.reshape(xPics,yPics,3)
 
-   # Setting commons on cord array
+   # Setting extrama on cord array
    gArr[0][0] = ex2
    gArr[xPics - 1][yPics - 1] = ex1
-   #print(gArr)
+   #print(gArr)  DEBUG
 
-   disDiagLine = max(disExtrema1) #lenght of diagonal line
+   disDiagLine = max(disExtrema) #lenght of diagonal line
 
    pDiadDis = disDiagLine / (max(xPics, yPics)- 1)
    k = 0
@@ -192,16 +193,16 @@ def makeCollage(picList, xPics, yPics):
    p1 = ex2 # starts with the bigest extrema and the other extrema
    p2 = ex1
 
-   rows, cols = yPics, xPics
-   for i in range(max(rows, cols)):
-      row = int(np.round(i * (rows - 1) / (max(rows, cols) - 1)))
-      col = int(np.round(i * (cols - 1) / (max(rows, cols) - 1)))
+   #rows, cols = yPics, xPics DEBUG
+   for i in range(max(yPics, xPics)):
+      y = int(np.round(i * (yPics - 1) / (max(yPics, xPics) - 1)))
+      x = int(np.round(i * (xPics - 1) / (max(yPics, xPics) - 1)))
 
-      if col >= cols:
-         col = cols - 1
+      if x >= xPics:
+         x = xPics - 1
 
-      x = col
-      y = row
+      #x = col DEBUG
+      #y = row DEBUG
       print('diags are ',x ,' ',y)
       if (gArr[x][y] - [0.0,0.0,0.0]).all() == False:
          print(x,y,'will take a value')
@@ -209,8 +210,7 @@ def makeCollage(picList, xPics, yPics):
          gArr[x][y] = find_point_on_line(p1, p2, pDiadDis*k)
 
 
-
-   print('Calc Diags')
+   print('Calc Diags') # Debug
    print(gArr)
    print()
 
@@ -219,12 +219,12 @@ def makeCollage(picList, xPics, yPics):
        for j in range(gArr.shape[1]):
            # If the point is all zeros
            if np.all(gArr[i, j] == 0):
-               # Calculate X, Y, and Z based on the rules
+               # Calculate X, Y, and Z for all of the array
                gArr[i, j, 0] = find_closest_non_zero(gArr[:, j, 0], i, "up") or find_closest_non_zero(gArr[:, j, 0], i, "down")
                gArr[i, j, 1] = find_closest_non_zero(gArr[:, j, 1], i, "up") or find_closest_non_zero(gArr[:, j, 1], i, "down")
                gArr[i, j, 2] = find_closest_non_zero(gArr[i, :, 2], j, "left") or find_closest_non_zero(gArr[i, :, 2], j, "right")
 
-   print('Calculated missing values')
+   print('Calculated missing values') # Debug
    print(gArr)
    print()
 
@@ -232,7 +232,8 @@ def makeCollage(picList, xPics, yPics):
    cordDat = cordDat.reshape(xPics,yPics,3)
 
    orgIndPics = find_best_distances(gArr, cordDat)
-   print(orgIndPics)
+
+   print(orgIndPics) #DEBUG
    for n in orgIndPics:
       print(n[1])
 
@@ -248,4 +249,13 @@ def makeCollage(picList, xPics, yPics):
          x = 0
 
    canvaImg.save('result.png') # saves final picture result, must be ONLY ran once at end
+   canvaImg.show()
+
+   wTemplate = input('Save data used as template for later: y/n ')
+   if (wTemplate == 'y'):
+       for n in range(len(picHashList)):
+           picHashList[n] = cachePath + picHashList[n] 
+
+       np.save('database/Templates/template' ,picHashList)
+
    plt.show()

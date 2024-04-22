@@ -10,11 +10,11 @@ from PIL import Image, ImageTk
 from PIL import ImageDraw,ImageFont
 from tkinter.messagebox import askyesno
 from tkinter import Scale
+import numpy as np
 #from tkinter.tix import *
 from tkinter.ttk import *
 from scripts import miojo
 from tkinter import messagebox
-import math
 
 def close_welcome_screen():
     welcome_screen.destroy()
@@ -67,7 +67,7 @@ def update_grid(event=None):
     total_images = len(globalFileList)
     
     #math for x&y based on total images
-    max_rows = int(math.sqrt(total_images))
+    max_rows = int(np.sqrt(total_images))
     max_columns = total_images // max_rows
     while max_rows * max_columns < total_images:
         max_columns += 1
@@ -123,6 +123,52 @@ def on_frame_configure(canvas):
 def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
     filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
+    #start from row 5 and column 1
+    row, col = 5, 1
+    row += int(len(globalFileList) / 3)
+    col += len(globalFileList) % 3
+
+    for files in filenames:
+        #print(fileList)
+        globalFileList.append(files)
+
+    labelsListLen = len(labelsList)
+
+    for i in range(len(filenames)):
+        img = Image.open(filenames[i])
+        img = img.resize((100, 100))  #resize the image
+        img = ImageTk.PhotoImage(img)
+
+        #create a label to display the image
+        label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center")
+        label.index = i + labelsListLen
+        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
+        label.grid(in_=frame, row=row, column=col)
+        label.image = img  # Keep a reference!
+        label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
+        label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
+        labelsList.append(label)
+        #Displays the name of all the labels and remove the ones that have been deleted
+        print("Number of pictures in Label List: ", len(labelsList))
+        print("Upload File: " + str(labelsList))
+        print("Number of pictures in file List: ", len(globalFileList))
+        print()
+        
+        #show the image
+        if col == 3:
+            #start a new line after the third column
+            row += 1
+            col = 1
+        else:
+            #within the same row
+            col += 1
+
+def load_template(fileList):
+    f_types = [('Template Files', '*.npy*')]
+    templatePath = tk.filedialog.askopenfilename(filetypes=f_types)
+    print(templatePath)
+    templateData = np.load(templatePath)
+    filenames = templateData
     #start from row 5 and column 1
     row, col = 5, 1
     row += int(len(globalFileList) / 3)
@@ -409,6 +455,10 @@ cellheight = 0
 #update button for X&Y
 update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
 update_button.place(in_=frame, anchor='n', x=scaleW * 0.07, y=scaleH * 0.88)
+
+#Template Button
+template_button = tk.Button(root, text="Chose Template", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: load_template(globalFileList))
+template_button.place(in_=frame, anchor='n', x=scaleW * 0.04, y=scaleH * 0.28)
 
 #welcome label
 welcome_lab = tk.Label(root, text="COLadge", bg='#36393e', fg='#ae8a8c',  font=('Helvetica bold', 16, "bold"))
