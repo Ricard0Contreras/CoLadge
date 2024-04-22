@@ -129,7 +129,6 @@ def upload_file(fileList):
     col += len(globalFileList) % 3
 
     for files in filenames:
-        #print(fileList)
         globalFileList.append(files)
 
     labelsListLen = len(labelsList)
@@ -344,11 +343,10 @@ def instruction_page():
     #create new window
     new_window = tk.Toplevel(root)
     new_window.title("How to use")
-    #icon_path = PhotoImage(file = 'GUI' + os.sep + 'Icon.ico')
-    #icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.ico")
+    global icon_path
 
     #set window icon
-    #new_window.iconbitmap(icon_path)
+    new_window.iconphoto(False, tk.PhotoImage(file=icon_path))
 
     #sizing
     width, height = new_window.winfo_screenwidth(), root.winfo_screenheight()
@@ -429,8 +427,7 @@ root.title('COLadge')
 root.config(bg='#36393e')
 
 #icon path
-#icon_path = 'GUI' + os.sep + 'Icon.ico'
-#icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.ico")
+icon_path = 'GUI' + os.sep + 'Icon.ico'
 
 #program dimensions
 scaleW = int(root.winfo_screenwidth() * 0.3)
@@ -452,31 +449,33 @@ columns = 20
 cellwidth = 0
 cellheight = 0
 
-#update button for X&Y
-update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
-update_button.place(in_=frame, anchor='n', x=scaleW * 0.07, y=scaleH * 0.88)
-
-#Template Button
-template_button = tk.Button(root, text="Chose Template", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: load_template(globalFileList))
-template_button.place(in_=frame, anchor='n', x=scaleW * 0.04, y=scaleH * 0.28)
-
 #welcome label
 welcome_lab = tk.Label(root, text="COLadge", bg='#36393e', fg='#ae8a8c',  font=('Helvetica bold', 16, "bold"))
 welcome_lab.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.04)
 
-#how to Use button
+#Help button
 instruction_page = tk.Button(root, text="?", bd=0.5, bg="#f8ecd1", fg="black", activebackground='#97335e', width=1, command=instruction_page)
 instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 
+# upload file button
+fileSel_button = tk.Button(root, text='Upload Files', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
+fileSel_button.place(anchor='n', x=scaleW * 0.35, y=scaleH * 0.12)
+
+#Template Button
+template_button = tk.Button(root, text="Load Template", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: load_template(globalFileList))
+template_button.place(anchor='n', x=scaleW * 0.65, y=scaleH * 0.12)
+
+#Make Coladge Button
+update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
+update_button.place(in_=frame, anchor='n', x=scaleW * 0.07, y=scaleH * 0.88)
+
+#Hover Tips
+tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
+t = CustomTooltip(fileSel_button, "Allows user to upload images")
+tu = CustomTooltip(update_button, "Begin creating collage")
 show_welcome_screen()
 
 if __name__ == "__main__":
-    #root.iconbitmap(icon_path)
-    # file selector button
-    b1 = tk.Button(root, text='Upload Files', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
-    b1.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.12)
-    tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
-    t = CustomTooltip(b1, "Allows user to upload images")
-    tu = CustomTooltip(update_button, "Begin creating collage")
+    root.iconphoto(False, tk.PhotoImage(file=icon_path))
     main()
     root.mainloop()
