@@ -1,4 +1,5 @@
-from scripts import localDatabase, resize, colorExtraction, canva
+from Scripts import localDatabase, resize, colorExtraction, canva
+import tkinter as tk
 from scipy.spatial import ConvexHull
 from scipy.spatial.distance import cdist
 from scipy.optimize import linear_sum_assignment
@@ -74,9 +75,49 @@ def find_closest_non_zero(array, index, direction):
                 return array[i]
     return 0
 
+def center_window(window, width, height):
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
+    window.geometry(f"{width}x{height}+{x}+{y}")
+
+def show_templatePrompt(listForTemplate):
+    global prompt_screen
+    prompt_screen = tk.Tk()
+    prompt_screen.overrideredirect(True)
+    prompt_screen_width = 300
+    prompt_screen_height = 200
+    center_window(prompt_screen, prompt_screen_width, prompt_screen_height)
+    prompt_label = tk.Label(prompt_screen, text='Save template of this Coladge made', padx=20, pady=20)
+    prompt_label.pack()
+    save_button = tk.Button(prompt_screen, text="Yes ", command=lambda: save_template(listForTemplate))
+    save_button.place(anchor='n', x=prompt_screen_width * 0.35, y=prompt_screen_height * 0.25)
+    noSave_button = tk.Button(prompt_screen, text="No", command=show_templatePrompt_close)
+    noSave_button.place(anchor='n', x=prompt_screen_width * 0.65, y=prompt_screen_height * 0.25)
+    # set the prompt screen as topmost
+    prompt_screen.attributes('-topmost', True)
+
+def show_templatePrompt_close():
+    prompt_screen.destroy()
+
+def save_template(listForTemplate):
+   cachePath = 'Database' + os.sep + 'pictureCache' + os.sep
+   show_templatePrompt_close()
+   for n in range(len(listForTemplate)):
+       listForTemplate[n] = cachePath + listForTemplate[n] 
+
+   #files = [('All Files', '**')]
+   savePath = tk.filedialog.asksaveasfilename()
+
+   if '.npy' in savePath:
+       np.save(savePath,listForTemplate)
+   else:
+       np.save(savePath+'.npy',listForTemplate)
+
 
 def makeCollage(picList, xPics, yPics):
-   cachePath = 'database' + os.sep + 'pictureCache' + os.sep
+   cachePath = 'Database' + os.sep + 'pictureCache' + os.sep
    #total amount of pictures
    picN = len(picList)
 
@@ -251,11 +292,6 @@ def makeCollage(picList, xPics, yPics):
    canvaImg.save('result.png') # saves final picture result, must be ONLY ran once at end
    canvaImg.show()
 
-   wTemplate = input('Save data used as template for later: y/n ')
-   if (wTemplate == 'y'):
-       for n in range(len(picHashList)):
-           picHashList[n] = cachePath + picHashList[n] 
-
-       np.save('database/Templates/template' ,picHashList)
+   show_templatePrompt(picHashList)
 
    plt.show()

@@ -13,7 +13,7 @@ from tkinter import Scale
 import numpy as np
 #from tkinter.tix import *
 from tkinter.ttk import *
-from scripts import miojo
+from Scripts import miojo
 from tkinter import messagebox
 
 def close_welcome_screen():
@@ -31,7 +31,26 @@ def show_welcome_screen():
     okay_button = tk.Button(welcome_screen, text="Okay", command=close_welcome_screen)
     okay_button.pack(pady=10)
     #timed close
-    welcome_screen.after(10000, close_welcome_screen)
+    welcome_screen.after(3000, close_welcome_screen)
+
+def show_error_screen(message):
+    global error_screen
+    error_screen = tk.Toplevel(root)
+    error_screen.overrideredirect(True)
+    error_screen_width = 300
+    error_screen_height = 200
+    center_window(error_screen, error_screen_width, error_screen_height)
+    error_label = tk.Label(error_screen, text=message, padx=20, pady=20)
+    error_label.pack()
+    okay_button = tk.Button(error_screen, text="Okay", command=close_error_screen)
+    okay_button.pack(pady=10)
+    #timed close
+    error_screen.after(5000, close_error_screen)
+    # set the error screen as topmost
+    error_screen.attributes('-topmost', True)
+
+def close_error_screen():
+    error_screen.destroy()
 
 def center_window(window, width, height):
     screen_width = window.winfo_screenwidth()
@@ -110,9 +129,14 @@ def create_scales():
 def pass_data(imageList):
     x_input = column_scale.get()
     y_input = row_scale.get()
-    print(f"Selected rows: {x_input}")
-    print(f"Selected columns: {y_input}")
-    miojo.makeCollage(imageList, x_input, y_input)
+    if len(imageList) > x_input * y_input:
+        show_error_screen('Remove pictures to fit size of Coladge')
+    elif len(imageList) < x_input * y_input:
+        show_error_screen('Add more pictures to fit size of Coladge')
+    else:
+        print(f"Selected rows: {x_input}") #Debug
+        print(f"Selected columns: {y_input}") #Debug
+        miojo.makeCollage(imageList, x_input, y_input)
 
 
 #FILE SELECTOR           

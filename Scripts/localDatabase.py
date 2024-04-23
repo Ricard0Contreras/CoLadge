@@ -7,7 +7,7 @@ localdbFile = 'cache.db'
 
 def create_connection(): # Use as a template for other DB functions
     try:
-        con = sqlite3.connect('database' + os.sep + localdbFile)
+        con = sqlite3.connect('Database' + os.sep + localdbFile)
         cur = con.cursor()
 
         # Here goes code that interacts with DB
@@ -21,7 +21,7 @@ def create_connection(): # Use as a template for other DB functions
 
 def addValue(key, valueColor):  # addValue('Flowers', 'Yellow', 'White', 'Green')
     try:
-        con = sqlite3.connect('database' + os.sep + localdbFile)
+        con = sqlite3.connect('Database' + os.sep + localdbFile)
         cur = con.cursor()
 
         sql = """INSERT INTO photos(key, c)
@@ -40,7 +40,7 @@ def addValue(key, valueColor):  # addValue('Flowers', 'Yellow', 'White', 'Green'
 
 def deleteValue(uniqueKey):  # delete the whole row based on the uniqueKey inputed
     try:
-        con = sqlite3.connect('database' + os.sep + localdbFile)
+        con = sqlite3.connect('Database' + os.sep + localdbFile)
         cur = con.cursor()
 
         g = uniqueKey
@@ -59,7 +59,7 @@ def deleteValue(uniqueKey):  # delete the whole row based on the uniqueKey input
 
 def showValues():  # prints all data form the table photos
     try:
-        con = sqlite3.connect('database' + os.sep + localdbFile)
+        con = sqlite3.connect('Database' + os.sep + localdbFile)
         cur = con.cursor()
 
         # Code that runs on connection
@@ -76,7 +76,7 @@ def showValues():  # prints all data form the table photos
 
 def returnColors(uniqueKey):  # based on the uniqueKey inputed return all the colors in a list for easier processing 
     try:
-        con = sqlite3.connect('database' + os.sep + localdbFile)
+        con = sqlite3.connect('Database' + os.sep + localdbFile)
         cur = con.cursor()
 
         cur.execute("""SELECT c FROM photos WHERE key = ?""", [uniqueKey])
@@ -107,7 +107,7 @@ def returnColors(uniqueKey):  # based on the uniqueKey inputed return all the co
 
 def keyInDB(uniqueKey):
     try:
-        con = sqlite3.connect('database' + os.sep + localdbFile)
+        con = sqlite3.connect('Database' + os.sep + localdbFile)
         cur = con.cursor()
 
         cur.execute("""SELECT key FROM photos WHERE key = ?""", [uniqueKey])

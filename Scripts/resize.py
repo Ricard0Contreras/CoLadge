@@ -26,4 +26,4 @@ def imgRemux(imgSize, path):
     cropped = img[0:width, 0:height]  # Crop Image to make into 1:1 Ratio
 
     resized = cv.resize(cropped, (imgSize, imgSize), interpolation=cv.INTER_CUBIC)  # Resize picture
-    cv.imwrite('database' + os.sep + 'pictureCache' + os.sep + calSha1(path) + '.cache.png', resized)  # Save resized image to file
+    cv.imwrite('Database' + os.sep + 'pictureCache' + os.sep + calSha1(path) + '.cache.png', resized)  # Save resized image to file
