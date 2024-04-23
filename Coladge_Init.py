@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import font
 import os, sys
 import sqlite3
+import time
 from tkinter.filedialog import askopenfile
 from tkinter import filedialog
 from PIL import Image, ImageTk
@@ -136,8 +137,25 @@ def pass_data(imageList):
     else:
         print(f"Selected rows: {x_input}") #Debug
         print(f"Selected columns: {y_input}") #Debug
-        miojo.makeCollage(imageList, x_input, y_input)
+        global loading_screen
+        loading_screen = tk.Tk()
+        loading_screen.title("Loading")
+        label = tk.Label(loading_screen, text="Waiting for task to finish.")
+        center_window(loading_screen, 200, 100)
+        loading_screen.attributes('-topmost', True)
+        label.pack()
 
+        root.after(200, lambda: run_code(imageList, x_input, y_input))
+        root.mainloop()
+
+def run_code(imageList, xVal, yVal):
+    # The window will stay open until this function call ends.
+    time.sleep(1) # Replace this with the code you want to run
+    proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
+    resultPic.show()
+    miojo.show_templatePrompt(proccessed_picList)
+    time.sleep(1) # Replace this with the code you want to run
+    loading_screen.destroy()
 
 #FILE SELECTOR           
 def on_frame_configure(canvas):

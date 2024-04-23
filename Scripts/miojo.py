@@ -1,13 +1,13 @@
 from Scripts import localDatabase, resize, colorExtraction, canva
-import tkinter as tk
+import os, re, sys
+#import os, re, sys, subprocess, time 
+from scipy.optimize import linear_sum_assignment, fsolve
 from scipy.spatial import ConvexHull
 from scipy.spatial.distance import cdist
-from scipy.optimize import linear_sum_assignment
-from scipy.optimize import fsolve
+import tkinter as tk
 from PIL import Image 
 import numpy as np
 import cv2 as cv
-import os, re, sys, subprocess
 
 #plot point in 3d to represent gradient and color
 from mpl_toolkits import mplot3d
@@ -290,8 +290,9 @@ def makeCollage(picList, xPics, yPics):
          x = 0
 
    canvaImg.save('result.png') # saves final picture result, must be ONLY ran once at end
-   canvaImg.show()
+   #canvaImg.show()
 
-   show_templatePrompt(picHashList)
+   #plt.show()
+   #show_templatePrompt(picHashList)
+   return picHashList, canvaImg
 
-   plt.show()
