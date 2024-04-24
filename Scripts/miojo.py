@@ -289,10 +289,7 @@ def makeCollage(picList, xPics, yPics):
          y += 1
          x = 0
 
-   canvaImg.save('result.png') # saves final picture result, must be ONLY ran once at end
-   #canvaImg.show()
+   #canvaImg.save('result.png') # saves final picture result, must be ONLY ran once at end
 
    #plt.show()
-   #show_templatePrompt(picHashList)
    return picHashList, canvaImg
-

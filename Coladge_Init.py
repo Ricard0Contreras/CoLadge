@@ -1,21 +1,17 @@
 from tkinter import *
+from threading import Thread
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
-import os, sys
-import sqlite3
-import time
+import os, sys, sqlite3, time, queue
 from tkinter.filedialog import askopenfile
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from PIL import ImageDraw,ImageFont
-from tkinter.messagebox import askyesno
-from tkinter import Scale
 import numpy as np
 #from tkinter.tix import *
-from tkinter.ttk import *
+#from tkinter.ttk import *
 from Scripts import miojo
-from tkinter import messagebox
 
 def close_welcome_screen():
     welcome_screen.destroy()
@@ -137,25 +133,115 @@ def pass_data(imageList):
     else:
         print(f"Selected rows: {x_input}") #Debug
         print(f"Selected columns: {y_input}") #Debug
+
+        #Loading screen when the processing starts
         global loading_screen
         loading_screen = tk.Tk()
+        loading_screen.overrideredirect(True)
         loading_screen.title("Loading")
         label = tk.Label(loading_screen, text="Waiting for task to finish.")
+        label.pack()
         center_window(loading_screen, 200, 100)
         loading_screen.attributes('-topmost', True)
-        label.pack()
 
-        root.after(200, lambda: run_code(imageList, x_input, y_input))
-        root.mainloop()
+        loading_screen.after(200, lambda: config_threadColadge(imageList, x_input, y_input))
+        loading_screen.mainloop()
 
-def run_code(imageList, xVal, yVal):
-    # The window will stay open until this function call ends.
-    time.sleep(1) # Replace this with the code you want to run
-    proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
-    resultPic.show()
-    miojo.show_templatePrompt(proccessed_picList)
-    time.sleep(1) # Replace this with the code you want to run
+
+def config_threadColadge(imgLisg, xValue, yValue):
+    q = queue.Queue()
+    q2 = queue.Queue()
+    coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
+
+    coladgeThread.start()
+
+    coladgeThread.join()
+
     loading_screen.destroy()
+
+    proccessed_picList = q.get_nowait()
+    resultPic = q2.get_nowait()
+
+    show_Picture(resultPic)
+    #show_askSave(resultPic, proccessed_picList)
+    #picShowThread = Thread(target=resultPic.show())
+    #picShowThread.start()
+    #picShowThread.join()
+    #resultPic.show()
+
+
+def run_code(imageList, xVal, yVal, q, q2):
+    # The window will stay open until this function call ends.
+    time.sleep(1)
+    proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
+    q.put_nowait(proccessed_picList)
+    q2.put_nowait(resultPic)
+
+
+def show_askSave(pic, proccessed_picLists):
+    global prompt_screen
+    prompt_screen = tk.Tk()
+    prompt_screen.overrideredirect(True)
+    prompt_screen_width = 300
+    prompt_screen_height = 200
+    center_window(prompt_screen, prompt_screen_width, prompt_screen_height)
+    prompt_label = tk.Label(prompt_screen, text='Save Coladge?', padx=20, pady=20)
+    prompt_label.pack()
+    save_button = tk.Button(prompt_screen, text="Save as Picture ", command=lambda: save_picture(pic))
+    save_button.place(anchor='n', x=prompt_screen_width * 0.15, y=prompt_screen_height * 0.25)
+
+    saveTemplate_button = tk.Button(prompt_screen, text="Save as Template ", command=lambda: miojo.save_template(proccessed_picList))
+    saveTemplate_button.place(anchor='n', x=prompt_screen_width * 0.45, y=prompt_screen_height * 0.25)
+
+    noSave_button = tk.Button(prompt_screen, text="No", command=show_askSave_close)
+    noSave_button.place(anchor='n', x=prompt_screen_width * 0.85, y=prompt_screen_height * 0.25)
+    # set the prompt screen as topmost
+    prompt_screen.attributes('-topmost', True)
+
+def show_askSave_close():
+    prompt_screen.destroy()
+
+def save_picture(pic):
+   def run_code(path):
+       if '.png' in savePath:
+           pic.save(savePath)
+           loading_screen.destroy()
+           picPath = savePath
+       else:
+           pic.save(savePath+'.png')
+           loading_screen.destroy()
+           picPath = savePath + '.png'
+
+       win = Tk()
+       win.geometry("800x600")
+       frame = Frame(win, width=600, height=400)
+       frame.pack()
+       frame.place(anchor='center', relx=0.5, rely=0.5)
+       # Create an object of tkinter ImageTk
+       img = Image.open(picPath)
+       img = ImageTk.PhotoImage(img)
+       # Create a Label Widget to display the text or Image
+       label = tk.Label(frame, image = img)
+       label.pack()
+
+   #show_askSave_close()
+   savePath = tk.filedialog.asksaveasfilename()
+
+   global loading_screen
+   loading_screen = tk.Tk()
+   loading_screen.overrideredirect(True)
+   loading_screen.title("Loading")
+   label = tk.Label(loading_screen, text="Waiting for task to finish.")
+   label.pack()
+   center_window(loading_screen, 200, 100)
+   loading_screen.attributes('-topmost', True)
+   loading_screen.after(200, lambda: run_code(savePath))
+   loading_screen.mainloop()
+
+
+def show_Picture(pic):
+    resultPath = save_picture(pic)
+
 
 #FILE SELECTOR           
 def on_frame_configure(canvas):
