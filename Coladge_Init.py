@@ -40,30 +40,22 @@ def create_rectangles():
 
 def update_grid(event=None):
     global rows, columns, cellwidth, cellheight
-    #get total images
     total_images = len(globalFileList)
     
-    #math for x&y based on total images
-    max_rows = int(np.sqrt(total_images))
-    max_columns = total_images // max_rows
-    while max_rows * max_columns < total_images:
-        max_columns += 1
-        
-    #update max for scales
+    max_rows = total_images // columns if columns > 0 else 1
+    max_columns = total_images // rows if rows > 0 else 1
+    
     row_scale.config(to=max_rows)
     column_scale.config(to=max_columns)
-    
     row_scale.bind("<ButtonRelease-1>", update_grid)
     column_scale.bind("<ButtonRelease-1>", update_grid)
+    
+    rows = max(1, row_scale.get())  # Ensure rows is at least 1
+    columns = max(1, column_scale.get())  # Ensure columns is at least 1
 
-    #update grid based on scales
-    rows = row_scale.get()
-    columns = column_scale.get()
-
-    #delete rectangles
     for rect in rectangles.values():
         canvas.itemconfig(rect, fill="#ac7d88")
-
+        
     for column in range(columns):
         for row in range(rows):
             x1 = column * cellwidth
@@ -75,14 +67,28 @@ def update_grid(event=None):
 
 def create_scales():
     global row_scale, column_scale
-    row_scale = tk.Scale(root, from_=1, to=rows, length=200, sliderlength=15, sliderrelief='flat',
-                         fg='black', activebackground='#f8ecd1', troughcolor='#85586f', bg='#deb6ab', command=update_grid)
-    row_scale.place(anchor='n', x=scaleW * 0.94, y=scaleH * 0.63, height= scaleH * 0.25, width=scaleW * 0.095)
-    column_scale = tk.Scale(root, from_=1, to=columns, orient="horizontal", length=200, sliderlength=15,
-                            sliderrelief='flat', fg='black', activebackground='#f8ecd1', troughcolor='#85586f', 
-                            bg='#deb6ab', command=update_grid)
-    column_scale.place(anchor='n', x=scaleW * 0.66, y=scaleH * 0.905, width= scaleW * 0.4, height= scaleH * 0.08, relheight=0.001)
+    total_images = len(globalFileList)
+    max_rows = max(1, int(np.sqrt(total_images)))
+    max_columns = total_images // max_rows if max_rows > 0 else 0
+    while max_rows * max_columns < total_images:
+        max_columns += 1
 
+    row_scale = tk.Scale(root, from_=1, to=max_rows, length=200, sliderlength=15, sliderrelief='flat',
+                         fg='black', activebackground='#f8ecd1', troughcolor='#85586f', bg='#deb6ab', command=update_grid)
+    row_scale.place(anchor='n', x=scaleW * 0.94, y=scaleH * 0.61, height= scaleH * 0.29, width=scaleW * 0.095)
+    row_scale.set(1)  # Set initial value to 1
+
+    column_scale = tk.Scale(root, from_=1, to=max_columns, orient="horizontal", length=200, sliderlength=15,
+                            sliderrelief='flat', fg='black', activebackground='#f8ecd1', troughcolor='#85586f',
+                            bg='#deb6ab', command=update_grid)
+    column_scale.set(1)  # Set initial value to 1
+    column_scale.place(anchor='n', x=scaleW * 0.687, y=scaleH * 0.9058255, width= scaleW * 0.4, height= scaleH * 0.08, relheight=0.001)
+
+    row_scale.bind("<ButtonRelease-1>", update_grid)
+    column_scale.bind("<ButtonRelease-1>", update_grid)
+
+    row_scale.set(max_rows)
+    column_scale.set(max_columns)
 
 #remember X/Y and pass data
 def pass_data(imageList):
@@ -141,47 +147,50 @@ def run_code(imageList, xVal, yVal):
 '''
 miojo.saveTemplate() REMEMBER TO USE IT
 '''
-
 def save_picture(pic):
-   def run_code(path):
-       if '.png' in savePath:
-           pic.save(savePath)
-           loading_screen.destroy()
-           picPath = savePath
-       else:
-           pic.save(savePath+'.png')
-           loading_screen.destroy()
-           picPath = savePath + '.png'
+    def run_code(path):
+        if '.png' in savePath:
+            pic.save(savePath)
+            tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
+        else:
+            pic.save(savePath + '.png')
+            tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
 
-       progressbar.stop()
-       time.sleep(.5)
-       tk.messagebox.showinfo('All Done :)')
-       time.sleep(.5)
-       return
+    save_window = tk.Toplevel(root)
+    save_window.title("Save Window")
+    save_window.config(bg='#36393e')
+    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.ico")
+    save_window.iconbitmap(icon_path)
 
+    width = scaleW
+    height = scaleH
+    save_window.geometry(f"{width}x{height}")
 
+    save_window.resizable(True, True)
 
-   savePath = ''
-   while savePath == '':
-       savePath = tk.filedialog.asksaveasfilename(title='Enter Save location')
-       if savePath == '': 
-            ans = tk.messagebox.askyesno(":(", "Do you want to Cancel the operation?")
-            if ans == True:
-                progressbar.stop()
-                return
+    def toggle_fullscreen():
+        save_window.attributes("-fullscreen", not save_window.attributes("-fullscreen"))
 
+    title_bar = tk.Frame(save_window, bg='#ae8a8c', relief=tk.RAISED, bd=1)
+    title_bar.pack(side=tk.TOP, fill=tk.X)
 
-   global loading_screen
-   loading_screen = tk.Tk()
-   loading_screen.overrideredirect(True)
-   loading_screen.title("Loading")
-   global loadingLabel
-   loadingLabel = tk.Label(loading_screen, text="Processing...")
-   loadingLabel.pack()
-   center_window(loading_screen, 150, 75)
-   loading_screen.attributes('-topmost', True)
-   loading_screen.after(200, lambda: run_code(savePath))
-   loading_screen.mainloop()
+    title_label = tk.Label(title_bar, text="Save Window", bg='#ae8a8c', fg='black', font=('Helvetica bold', 10))
+    title_label.pack(side=tk.LEFT, padx=10)
+
+    full_screen_button = tk.Button(title_bar, text="Full Screen", bg='#f8ecd1', fg='black', command=toggle_fullscreen)
+    full_screen_button.pack(side=tk.RIGHT, padx=10)
+
+    save_button = tk.Button(save_window, text="Save", bg='#f8ecd1', fg='black', command=lambda: run_code(savePath))
+    save_button.pack(pady=20)
+
+    savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', filetypes=[('PNG Files', '*.png')])
+
+    if not savePath:
+        save_window.destroy()
+        return
+
+    save_window.destroy()
+    run_code(savePath)
 
 
 #FILE SELECTOR           
@@ -217,35 +226,27 @@ def make_previews(fileList, filenames):
 
     for i in range(len(filenames)):
         img = Image.open(filenames[i])
-        img = img.resize((100, 100))  #resize the image
+        img = img.resize((100, 100))  # Resize the image
         img = ImageTk.PhotoImage(img)
 
-        #create a label to display the image
-        label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center")
+        # Create a label to display the image
+        label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center", bg="#deb6ab")
         label.index = i + labelsListLen
-        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
-        label.grid(in_=frame, row=row, column=col)
+        label.bind("<Button-1>", lambda event, lab=label: delete_file(globalFileList, lab))
+        label.grid(in_=frame, row=row, column=col, padx=1, pady=1)  # Add padding for centering
         label.image = img  # Keep a reference!
         label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
         label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
         labelsList.append(label)
 
-        ''' # Debug
-        #Displays the name of all the labels and remove the ones that have been deleted
-        print("Number of pictures in Label List: ", len(labelsList)) #Debug
-        print("Upload Images: " + str(labelsList))#Debug
-        print("Number of pictures in file List: ", len(globalFileList))#Debug
-        print()#Debug
-        '''
-        
         progressbar.stop()
-        #show the image
+        # Show the image
         if col == 3:
-            #start a new line after the third column
+            # Start a new line after the third column
             row += 1
             col = 1
         else:
-            #within the same row
+            # Within the same row
             col += 1
 
 
@@ -420,7 +421,7 @@ template_button.place(anchor='n', x=scaleW * 0.65, y=scaleH * 0.12)
 
 #Make Coladge Button
 update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
-update_button.place(in_=frame, anchor='n', x=scaleW * 0.07, y=scaleH * 0.88)
+update_button.place(in_=frame, anchor='n', x=scaleW * 0.108, y=scaleH * 0.88)
 
 # Progress bar
 progressbar = ttk.Progressbar()
