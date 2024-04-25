@@ -110,31 +110,33 @@ def pass_data(imageList):
         center_window(loading_screen, 150, 75)
         loading_screen.attributes('-topmost', True)
         progressbar.start(5)
-        loading_screen.after(200, lambda: config_threadColadge(imageList, x_input, y_input))
+        loading_screen.after(200, lambda: config_Coladge(imageList, x_input, y_input))
         loading_screen.mainloop()
 
 
-def config_threadColadge(imgLisg, xValue, yValue):
-    q = queue.Queue()
-    q2 = queue.Queue()
+def config_Coladge(imgLisg, xValue, yValue):
+    #q = queue.Queue()
+    #q2 = queue.Queue()
 
-    coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
-    coladgeThread.start() # Start processing of coladge
+    #coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
+    processed_picList, resultPic = run_code(imgLisg, xValue, yValue)
+    #coladgeThread.start() # Start processing of coladge
 
-    coladgeThread.join() # Must finish the processing before continuing
+    #coladgeThread.join() # Must finish the processing before continuing
     loading_screen.destroy()
 
-    proccessed_picList = q.get_nowait() # Result data 
-    resultPic = q2.get_nowait()
+    #proccessed_picList = q.get_nowait() # Result data 
+    #resultPic = q2.get_nowait()
 
     save_picture(resultPic) # Saving results as user desires
 
 
-def run_code(imageList, xVal, yVal, q, q2):
+def run_code(imageList, xVal, yVal):
     time.sleep(1)
     proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
-    q.put_nowait(proccessed_picList)
-    q2.put_nowait(resultPic)
+    return proccessed_picList, resultPic
+    #q.put_nowait(proccessed_picList)
+    #q2.put_nowait(resultPic)
 
 '''
 miojo.saveTemplate() REMEMBER TO USE IT
