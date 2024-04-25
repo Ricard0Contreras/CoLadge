@@ -1,53 +1,14 @@
-from tkinter import *
 from threading import Thread
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font
 import os, sys, sqlite3, time, queue
-from tkinter.filedialog import askopenfile
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from PIL import ImageDraw,ImageFont
 import numpy as np
-#from tkinter.tix import *
-#from tkinter.ttk import *
+from GUI import manual
 from Scripts import miojo
 
-def close_welcome_screen():
-    welcome_screen.destroy()
-
-def show_welcome_screen():
-    global welcome_screen
-    welcome_screen = tk.Toplevel(root)
-    welcome_screen.overrideredirect(True)
-    welcome_screen_width = 300
-    welcome_screen_height = 200
-    center_window(welcome_screen, welcome_screen_width, welcome_screen_height)
-    welcome_label = tk.Label(welcome_screen, text="Welcome to COLadge! Enjoy creating your collages!", padx=20, pady=20)
-    welcome_label.pack()
-    okay_button = tk.Button(welcome_screen, text="Okay", command=close_welcome_screen)
-    okay_button.pack(pady=10)
-    #timed close
-    welcome_screen.after(3000, close_welcome_screen)
-
-def show_error_screen(message):
-    global error_screen
-    error_screen = tk.Toplevel(root)
-    error_screen.overrideredirect(True)
-    error_screen_width = 300
-    error_screen_height = 200
-    center_window(error_screen, error_screen_width, error_screen_height)
-    error_label = tk.Label(error_screen, text=message, padx=20, pady=20)
-    error_label.pack()
-    okay_button = tk.Button(error_screen, text="Okay", command=close_error_screen)
-    okay_button.pack(pady=10)
-    #timed close
-    error_screen.after(5000, close_error_screen)
-    # set the error screen as topmost
-    error_screen.attributes('-topmost', True)
-
-def close_error_screen():
-    error_screen.destroy()
 
 def center_window(window, width, height):
     screen_width = window.winfo_screenwidth()
@@ -121,29 +82,34 @@ def create_scales():
                             sliderrelief='flat', fg='black', activebackground='#f8ecd1', troughcolor='#85586f', 
                             bg='#deb6ab', command=update_grid)
     column_scale.place(anchor='n', x=scaleW * 0.66, y=scaleH * 0.905, width= scaleW * 0.4, height= scaleH * 0.08, relheight=0.001)
-    
+
+
 #remember X/Y and pass data
 def pass_data(imageList):
     x_input = column_scale.get()
     y_input = row_scale.get()
     if len(imageList) > x_input * y_input:
-        show_error_screen('Remove pictures to fit size of Coladge')
+        tk.messagebox.showerror('Error', 'Remove Pictures to fit size')
     elif len(imageList) < x_input * y_input:
-        show_error_screen('Add more pictures to fit size of Coladge')
+        tk.messagebox.showerror('Error', 'Add more pictures to fit size')
     else:
-        print(f"Selected rows: {x_input}") #Debug
-        print(f"Selected columns: {y_input}") #Debug
+        #print(f"Selected rows: {x_input}") #Debug
+        #print(f"Selected columns: {y_input}") #Debug
+
+        global progressbar
+        progressbar.start(5)
 
         #Loading screen when the processing starts
         global loading_screen
         loading_screen = tk.Tk()
         loading_screen.overrideredirect(True)
         loading_screen.title("Loading")
-        label = tk.Label(loading_screen, text="Waiting for task to finish.")
-        label.pack()
-        center_window(loading_screen, 200, 100)
+        global loadingLabel
+        loadingLabel = tk.Label(loading_screen, text="Processing ...")
+        loadingLabel.pack()
+        center_window(loading_screen, 150, 75)
         loading_screen.attributes('-topmost', True)
-
+        progressbar.start(5)
         loading_screen.after(200, lambda: config_threadColadge(imageList, x_input, y_input))
         loading_screen.mainloop()
 
@@ -151,55 +117,28 @@ def pass_data(imageList):
 def config_threadColadge(imgLisg, xValue, yValue):
     q = queue.Queue()
     q2 = queue.Queue()
+
     coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
+    coladgeThread.start() # Start processing of coladge
 
-    coladgeThread.start()
-
-    coladgeThread.join()
-
+    coladgeThread.join() # Must finish the processing before continuing
     loading_screen.destroy()
 
-    proccessed_picList = q.get_nowait()
+    proccessed_picList = q.get_nowait() # Result data 
     resultPic = q2.get_nowait()
 
-    show_Picture(resultPic)
-    #show_askSave(resultPic, proccessed_picList)
-    #picShowThread = Thread(target=resultPic.show())
-    #picShowThread.start()
-    #picShowThread.join()
-    #resultPic.show()
+    save_picture(resultPic) # Saving results as user desires
 
 
 def run_code(imageList, xVal, yVal, q, q2):
-    # The window will stay open until this function call ends.
     time.sleep(1)
     proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
     q.put_nowait(proccessed_picList)
     q2.put_nowait(resultPic)
 
-
-def show_askSave(pic, proccessed_picLists):
-    global prompt_screen
-    prompt_screen = tk.Tk()
-    prompt_screen.overrideredirect(True)
-    prompt_screen_width = 300
-    prompt_screen_height = 200
-    center_window(prompt_screen, prompt_screen_width, prompt_screen_height)
-    prompt_label = tk.Label(prompt_screen, text='Save Coladge?', padx=20, pady=20)
-    prompt_label.pack()
-    save_button = tk.Button(prompt_screen, text="Save as Picture ", command=lambda: save_picture(pic))
-    save_button.place(anchor='n', x=prompt_screen_width * 0.15, y=prompt_screen_height * 0.25)
-
-    saveTemplate_button = tk.Button(prompt_screen, text="Save as Template ", command=lambda: miojo.save_template(proccessed_picList))
-    saveTemplate_button.place(anchor='n', x=prompt_screen_width * 0.45, y=prompt_screen_height * 0.25)
-
-    noSave_button = tk.Button(prompt_screen, text="No", command=show_askSave_close)
-    noSave_button.place(anchor='n', x=prompt_screen_width * 0.85, y=prompt_screen_height * 0.25)
-    # set the prompt screen as topmost
-    prompt_screen.attributes('-topmost', True)
-
-def show_askSave_close():
-    prompt_screen.destroy()
+'''
+miojo.saveTemplate() REMEMBER TO USE IT
+'''
 
 def save_picture(pic):
    def run_code(path):
@@ -212,35 +151,35 @@ def save_picture(pic):
            loading_screen.destroy()
            picPath = savePath + '.png'
 
-       win = Tk()
-       win.geometry("800x600")
-       frame = Frame(win, width=600, height=400)
-       frame.pack()
-       frame.place(anchor='center', relx=0.5, rely=0.5)
-       # Create an object of tkinter ImageTk
-       img = Image.open(picPath)
-       img = ImageTk.PhotoImage(img)
-       # Create a Label Widget to display the text or Image
-       label = tk.Label(frame, image = img)
-       label.pack()
+       progressbar.stop()
+       time.sleep(.5)
+       tk.messagebox.showinfo('All Done :)')
+       time.sleep(.5)
+       return
 
-   #show_askSave_close()
-   savePath = tk.filedialog.asksaveasfilename()
+
+
+   savePath = ''
+   while savePath == '':
+       savePath = tk.filedialog.asksaveasfilename(title='Enter Save location')
+       if savePath == '': 
+            ans = tk.messagebox.askyesno(":(", "Do you want to Cancel the operation?")
+            if ans == True:
+                progressbar.stop()
+                return
+
 
    global loading_screen
    loading_screen = tk.Tk()
    loading_screen.overrideredirect(True)
    loading_screen.title("Loading")
-   label = tk.Label(loading_screen, text="Waiting for task to finish.")
-   label.pack()
-   center_window(loading_screen, 200, 100)
+   global loadingLabel
+   loadingLabel = tk.Label(loading_screen, text="Processing...")
+   loadingLabel.pack()
+   center_window(loading_screen, 150, 75)
    loading_screen.attributes('-topmost', True)
    loading_screen.after(200, lambda: run_code(savePath))
    loading_screen.mainloop()
-
-
-def show_Picture(pic):
-    resultPath = save_picture(pic)
 
 
 #FILE SELECTOR           
@@ -252,59 +191,26 @@ def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
     filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
     #start from row 5 and column 1
-    row, col = 5, 1
-    row += int(len(globalFileList) / 3)
-    col += len(globalFileList) % 3
-
-    for files in filenames:
-        globalFileList.append(files)
-
-    labelsListLen = len(labelsList)
-
-    for i in range(len(filenames)):
-        img = Image.open(filenames[i])
-        img = img.resize((100, 100))  #resize the image
-        img = ImageTk.PhotoImage(img)
-
-        #create a label to display the image
-        label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center")
-        label.index = i + labelsListLen
-        label.bind("<Button-1>",lambda event, lab = label: delete_file(globalFileList, lab))
-        label.grid(in_=frame, row=row, column=col)
-        label.image = img  # Keep a reference!
-        label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
-        label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
-        labelsList.append(label)
-        #Displays the name of all the labels and remove the ones that have been deleted
-        print("Number of pictures in Label List: ", len(labelsList))
-        print("Upload File: " + str(labelsList))
-        print("Number of pictures in file List: ", len(globalFileList))
-        print()
-        
-        #show the image
-        if col == 3:
-            #start a new line after the third column
-            row += 1
-            col = 1
-        else:
-            #within the same row
-            col += 1
+    make_previews(fileList, filenames)
 
 def load_template(fileList):
     f_types = [('Template Files', '*.npy*')]
-    templatePath = tk.filedialog.askopenfilename(filetypes=f_types)
-    print(templatePath)
+    dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
+    templatePath = tk.filedialog.askopenfilename(initialdir=dirTemplates, title='Select Template', filetypes=f_types)
+    # print(templatePath) # Debug
     templateData = np.load(templatePath)
     filenames = templateData
-    #start from row 5 and column 1
+    make_previews(fileList, filenames)
+
+def make_previews(fileList, filenames):
     row, col = 5, 1
     row += int(len(globalFileList) / 3)
     col += len(globalFileList) % 3
 
     for files in filenames:
-        #print(fileList)
         globalFileList.append(files)
 
+    progressbar.start(5)
     labelsListLen = len(labelsList)
 
     for i in range(len(filenames)):
@@ -321,12 +227,16 @@ def load_template(fileList):
         label.bind("<Enter>", lambda event, lab=label: changeImage(lab))
         label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
         labelsList.append(label)
+
+        ''' # Debug
         #Displays the name of all the labels and remove the ones that have been deleted
-        print("Number of pictures in Label List: ", len(labelsList))
-        print("Upload File: " + str(labelsList))
-        print("Number of pictures in file List: ", len(globalFileList))
-        print()
+        print("Number of pictures in Label List: ", len(labelsList)) #Debug
+        print("Upload Images: " + str(labelsList))#Debug
+        print("Number of pictures in file List: ", len(globalFileList))#Debug
+        print()#Debug
+        '''
         
+        progressbar.stop()
         #show the image
         if col == 3:
             #start a new line after the third column
@@ -335,6 +245,7 @@ def load_template(fileList):
         else:
             #within the same row
             col += 1
+
 
 def delete_file(fileList, label):
     #if label.index < len(fileList):
@@ -347,8 +258,8 @@ def delete_file(fileList, label):
     del fileList[index]
     del labelsList[index]
 
-    print("Delete File: " + str(labelsList))
-    print()
+    # print("Delete File: " + str(labelsList)) #Debug
+    # print() #Degug
     update_labels()
 
 def update_labels():
@@ -360,8 +271,8 @@ def update_labels():
     tempLabelsList = []
     tempIndex = 0
 
-    print("Update Labels: " + str(labelsList))
-    print()
+    #print("Update Labels: " + str(labelsList)) # Debug
+    #print() #Debug
     for label in labelsList:
         
         image = label.image
@@ -454,94 +365,6 @@ def create_main_frame():
     # bind the function to the frame's configuration event
     frame.bind("<Configure>", lambda event, canvas=canvas: on_frame_configure(canvas))
 
-def find_word(text_widget, word):
-    #start from beginning
-    start_index = "1.0"
-    while True:
-        #search for the word from the start index
-        pos = text_widget.search(word, start_index, stopindex=tk.END)
-        if not pos:
-            break
-        #return position of word
-        yield pos
-        #update start index to continue searching
-        start_index = f"{pos}+{len(word)}c"
-
-def instruction_page():
-    #create new window
-    new_window = tk.Toplevel(root)
-    new_window.title("How to use")
-    global icon_path
-
-    #set window icon
-    new_window.iconphoto(False, tk.PhotoImage(file=icon_path))
-
-    #sizing
-    width, height = new_window.winfo_screenwidth(), root.winfo_screenheight()
-    scaleW = int(width * 0.25)
-    scaleH = int(height * 0.51)
-    new_window.geometry(f"{scaleW}x{scaleH}+0+0")
-    new_window.maxsize(scaleW, scaleH)
-    new_window.minsize(scaleW, scaleH)
-
-    #text for instructions
-    instruction_body = tk.Text(new_window, wrap="word", bg="#36393e", fg="white", font=('Helvetica', 9), height=30)
-    instruction_body.tag_configure("bold", font=('Helvetica', 9, 'bold'))
-    instruction_body.tag_configure("big_bold", font=('Helvetica', 12, 'bold'))
-    instruction_body.tag_configure("darker_color", foreground="#ae8a8c")
-    instruction_body.tag_configure("mid_color", foreground="#deb6ab")
-    instruction_body.tag_configure("lighter_color", foreground="#f8ecd1")
-    #insert text
-    instruction_body.insert(tk.END, """
-                      CoLodge User Manuel
-
-    Name:
-            Color Collage
-                                        
-    Description:
-            User-friendly program used to create a collage of
-            images that are automatically sorted by their colors.
-                                        
-    Using Input Form:
-            Using Images
-                    - Add images by clicking the 'Upload Files'
-                    button. You will be able to scroll through
-                    the images you add by using the scroll bar
-                    to the right.
-            Deleting Images
-                    - Hover over an image you wish to remove and
-                    click on the red X that appears to delete.
-            Selecting Collage Size
-                    - Use the scrollers on the bottom half of the
-                    window to change your rows (x) and columns
-                    (y) to customize what final size you would
-                    like your collage to be.
-            Create Collage
-                    - After images and size variable criteria have
-                    been met, click the 'Make Collage' button to
-                    begin compiling your color collage.""")
-
-     #apply tags to specific words
-    for word in ["CoLodge User Manuel", "Name:", "Description:", "Using Input Form:", "Using Images", "Deleting Images", "Selecting Collage Size", "Create Collage"]:
-        for pos in find_word(instruction_body, word):
-            end = f"{pos}+{len(word)}c"
-            if word == "Name:":
-                instruction_body.tag_add("bold", pos, end)
-                instruction_body.tag_add("mid_color", pos, end)
-            elif word in ["Description:", "Using Input Form:"]:
-                instruction_body.tag_add("bold", pos, end)
-                instruction_body.tag_add("bold", pos, end)
-                instruction_body.tag_add("mid_color", pos, end)
-            elif word in ["CoLodge User Manuel"]:
-                instruction_body.tag_add("big_bold", pos, end)
-                instruction_body.tag_add("darker_color", pos, end)
-                
-            elif word in ["Using Images", "Deleting Images", "Selecting Collage Size", "Create Collage"]:
-                instruction_body.tag_add("bold", pos, end)
-                instruction_body.tag_add("lighter_color", pos, end)
-
-    instruction_body.config(state=tk.DISABLED)
-    instruction_body.pack()
 
 def main():
     create_canvas()
@@ -582,11 +405,11 @@ welcome_lab = tk.Label(root, text="COLadge", bg='#36393e', fg='#ae8a8c',  font=(
 welcome_lab.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.04)
 
 #Help button
-instruction_page = tk.Button(root, text="?", bd=0.5, bg="#f8ecd1", fg="black", activebackground='#97335e', width=1, command=instruction_page)
+instruction_page = tk.Button(root, text="?", bd=0.5, bg="#f8ecd1", fg="black", activebackground='#97335e', width=1, command=lambda: manual.instruction_page(root))
 instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 
 # upload file button
-fileSel_button = tk.Button(root, text='Upload Files', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
+fileSel_button = tk.Button(root, text='Upload Images', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
 fileSel_button.place(anchor='n', x=scaleW * 0.35, y=scaleH * 0.12)
 
 #Template Button
@@ -597,11 +420,16 @@ template_button.place(anchor='n', x=scaleW * 0.65, y=scaleH * 0.12)
 update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
 update_button.place(in_=frame, anchor='n', x=scaleW * 0.07, y=scaleH * 0.88)
 
+# Progress bar
+progressbar = ttk.Progressbar()
+progressbar.step(100)
+progressbar.place(anchor= 'n', x=scaleW * 0.07, y=scaleH * 0.97, width=scaleW * 0.4)
+
 #Hover Tips
 tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
 t = CustomTooltip(fileSel_button, "Allows user to upload images")
 tu = CustomTooltip(update_button, "Begin creating collage")
-show_welcome_screen()
+#show_welcome_screen()
 
 if __name__ == "__main__":
     root.iconphoto(False, tk.PhotoImage(file=icon_path))
