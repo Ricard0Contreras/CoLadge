@@ -81,7 +81,7 @@ def center_window(window, width, height):
     y = (screen_height - height) // 2
     window.geometry(f"{width}x{height}+{x}+{y}")
 
-def save_template(listForTemplate):
+def save_template(listForTemplate,x,y):
    cachePath = 'Database' + os.sep + 'pictureCache' + os.sep
 
    for n in range(len(listForTemplate)):
@@ -99,8 +99,10 @@ def save_template(listForTemplate):
 
    if '.npy' in savePath:
        np.save(savePath,listForTemplate)
+       tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
    else:
-       np.save(savePath+'.npy',listForTemplate)
+       np.save(savePath+x+'x'+y+'.npy',listForTemplate)
+       tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
 
 
 def makeCollage(picList, xPics, yPics):
@@ -119,10 +121,9 @@ def makeCollage(picList, xPics, yPics):
    # List of path of cached pics
    picHashList = [] 
 
-   canva.makeCanva(canvaXMax, canvaYMax, sizePics) # make the canva (X, Y, Size of squares)
-   canvaImg = cv.imread('result.png') # opening canva, name hardcoded on scripts/canva.py 
-   canvaHeight, canvaWidth = canvaImg.shape[:2] # width and height of canva
-   canvaImg = Image.open('result.png') # opening canva to start loop of operations 
+   canvaImg = canva.makeCanva(canvaXMax, canvaYMax, sizePics) # make the canva (X, Y, Size of squares)
+   # canvaImg = cv.imread('result.png') # opening canva, name hardcoded on scripts/canva.py 
+   #canvaImg = Image.open('result.png') # opening canva to start loop of operations 
 
    # 3d plot making
    ax = plt.figure().add_subplot(projection='3d')

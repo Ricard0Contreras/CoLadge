@@ -12,7 +12,7 @@ def makeCanva(x, y, sizePics):
     canvaX = sizePics * x
     canvaY = sizePics * y
     canvaImg = Image.new('RGB', (canvaX, canvaY)) 
-    canvaImg.save('result.png')
+    return canvaImg
 
 def putPic(canvaImg, picPath, sizePics, x, y):
     posX = x * sizePics

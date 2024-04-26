@@ -121,46 +121,52 @@ def pass_data(imageList):
 
 
 def config_Coladge(imgLisg, xValue, yValue):
-    #q = queue.Queue()
-    #q2 = queue.Queue()
+    q = queue.Queue()
+    q2 = queue.Queue()
 
-    #coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
-    processed_picList, resultPic = run_code(imgLisg, xValue, yValue)
-    #coladgeThread.start() # Start processing of coladge
+    global progressbar
+    progressbar.start(5)
+    coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
+    #processed_picList, resultPic = run_code(imgLisg, xValue, yValue)
+    coladgeThread.start() # Start processing of coladge
 
-    #coladgeThread.join() # Must finish the processing before continuing
+    coladgeThread.join() # Must finish the processing before continuing
     loading_screen.destroy()
 
-    #proccessed_picList = q.get_nowait() # Result data 
-    #resultPic = q2.get_nowait()
+    proccessed_picList = q.get_nowait() # Result data 
+    resultPic = q2.get_nowait()
 
-    save_picture(resultPic) # Saving results as user desires
+    save_picture(resultPic, proccessed_picList, str(xValue), str(yValue)) # Saving results as user desires
 
 
-def run_code(imageList, xVal, yVal):
+def run_code(imageList, xVal, yVal,q ,q2):
     time.sleep(1)
     proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
-    return proccessed_picList, resultPic
-    #q.put_nowait(proccessed_picList)
-    #q2.put_nowait(resultPic)
+    #return proccessed_picList, resultPic
+    q.put_nowait(proccessed_picList)
+    q2.put_nowait(resultPic)
 
 '''
 miojo.saveTemplate() REMEMBER TO USE IT
 '''
-def save_picture(pic):
-    def run_code(path):
+def save_picture(pic, picList, x, y):
+    def run_code():
+        savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', filetypes=[('PNG Files', '*.png')])
         if '.png' in savePath:
             pic.save(savePath)
             tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
         else:
-            pic.save(savePath + '.png')
+            pic.save(savePath+'.png')
             tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
 
     save_window = tk.Toplevel(root)
     save_window.title("Save Window")
     save_window.config(bg='#36393e')
-    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.ico")
-    save_window.iconbitmap(icon_path)
+    #icon_path = 'GUI' + os.sep + 'Icon.ico'
+    #save_window.iconbitmap(icon_path)
+
+    global progressbar
+    progressbar.stop()
 
     width = scaleW
     height = scaleH
@@ -180,17 +186,12 @@ def save_picture(pic):
     full_screen_button = tk.Button(title_bar, text="Full Screen", bg='#f8ecd1', fg='black', command=toggle_fullscreen)
     full_screen_button.pack(side=tk.RIGHT, padx=10)
 
-    save_button = tk.Button(save_window, text="Save", bg='#f8ecd1', fg='black', command=lambda: run_code(savePath))
+    save_button = tk.Button(save_window, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code())
     save_button.pack(pady=20)
 
-    savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', filetypes=[('PNG Files', '*.png')])
+    saveTemp_button = tk.Button(save_window, text="Save Template", bg='#f8ecd1', fg='black', command=lambda: miojo.save_template(picList, x, y))
+    saveTemp_button.pack(pady=20)
 
-    if not savePath:
-        save_window.destroy()
-        return
-
-    save_window.destroy()
-    run_code(savePath)
 
 
 #FILE SELECTOR           
@@ -201,16 +202,21 @@ def on_frame_configure(canvas):
 def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
     filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
+    if len(filenames) == 0:
+        return
     #start from row 5 and column 1
+    progressbar.start(5)
     make_previews(fileList, filenames)
 
 def load_template(fileList):
     f_types = [('Template Files', '*.npy*')]
     dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
     templatePath = tk.filedialog.askopenfilename(initialdir=dirTemplates, title='Select Template', filetypes=f_types)
-    #print(templatePath) # Debug
+    if templatePath == '':
+        return None
     templateData = np.load(templatePath)
     filenames = templateData
+    progressbar.start(5)
     make_previews(fileList, filenames)
 
 def make_previews(fileList, filenames):
@@ -227,7 +233,6 @@ def make_previews(fileList, filenames):
     for files in filenames:
         globalFileList.append(files)
 
-    progressbar.start(5)
     labelsListLen = len(labelsList)
 
     for i in range(len(filenames)):
