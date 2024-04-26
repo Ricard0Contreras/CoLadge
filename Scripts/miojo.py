@@ -8,6 +8,8 @@ from PIL import Image
 import numpy as np
 import cv2 as cv
 
+import pdb
+
 #plot point in 3d to represent gradient and color
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
@@ -106,7 +108,7 @@ def save_template(listForTemplate,x,y):
 
 
 def makeCollage(picList, xPics, yPics):
-   cachePath = 'Database' + os.sep + 'pictureCache' + os.sep
+   cachePath = 'Database/pictureCache/'
    #total amount of pictures
    picN = len(picList)
 
