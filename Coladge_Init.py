@@ -88,7 +88,7 @@ def create_scales():
     column_scale.bind("<ButtonRelease-1>", update_grid)
 
     row_scale.set(max_rows)
-    column_scale.set(max_columns)
+    column_scale.set(1)  # Set initial value to 1
 
 #remember X/Y and pass data
 def pass_data(imageList):
@@ -162,20 +162,13 @@ def save_picture(pic, picList, x, y):
     save_window = tk.Toplevel(root)
     save_window.title("Save Window")
     save_window.config(bg='#36393e')
-    #icon_path = 'GUI' + os.sep + 'Icon.ico'
-    #save_window.iconbitmap(icon_path)
 
-    global progressbar
-    progressbar.stop()
-
-    width = scaleW
-    height = scaleH
-    save_window.geometry(f"{width}x{height}")
-
-    save_window.resizable(True, True)
-
+    # Toggle full screen
     def toggle_fullscreen():
         save_window.attributes("-fullscreen", not save_window.attributes("-fullscreen"))
+
+    # Bind the full screen toggle to the Escape key
+    save_window.bind("<Escape>", lambda event: toggle_fullscreen())
 
     title_bar = tk.Frame(save_window, bg='#ae8a8c', relief=tk.RAISED, bd=1)
     title_bar.pack(side=tk.TOP, fill=tk.X)
@@ -184,13 +177,51 @@ def save_picture(pic, picList, x, y):
     title_label.pack(side=tk.LEFT, padx=10)
 
     full_screen_button = tk.Button(title_bar, text="Full Screen", bg='#f8ecd1', fg='black', command=toggle_fullscreen)
-    full_screen_button.pack(side=tk.RIGHT, padx=10)
+    full_screen_button.pack(side=tk.RIGHT, padx=20)
 
-    save_button = tk.Button(save_window, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code())
-    save_button.pack(pady=20)
+    saveTemp_button = tk.Button(title_bar, text="Save Template", bg='#f8ecd1', fg='black', command=lambda: miojo.save_template(picList, x, y))
+    saveTemp_button.pack(side=tk.RIGHT, padx=10)
 
-    saveTemp_button = tk.Button(save_window, text="Save Template", bg='#f8ecd1', fg='black', command=lambda: miojo.save_template(picList, x, y))
-    saveTemp_button.pack(pady=20)
+    save_button = tk.Button(title_bar, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code())
+    save_button.pack(side=tk.RIGHT, padx=10)
+
+    # Get the user's screen resolution
+    screen_width = save_window.winfo_screenwidth()
+    screen_height = save_window.winfo_screenheight()
+
+    # Calculate the maximum size the image can be displayed without going off-screen
+    max_width = screen_width - 100  # 100 pixels margin on each side
+    max_height = screen_height - 200  # 100 pixels margin on top and bottom
+    max_aspect_ratio = max_width / max_height
+
+    # Calculate the aspect ratio of the image
+    image_aspect_ratio = pic.width / pic.height
+
+    # Determine the optimal size for the image
+    if max_aspect_ratio > image_aspect_ratio:
+        # Height is the limiting factor
+        image_height = min(pic.height, max_height)
+        image_width = int(image_height * image_aspect_ratio)
+    else:
+        # Width is the limiting factor
+        image_width = min(pic.width, max_width)
+        image_height = int(image_width / image_aspect_ratio)
+
+    # Resize the image to fit within the calculated maximum size
+    resized_pic = pic.resize((image_width, image_height))
+
+    # Convert the resized image to ImageTk format
+    image_to_display = ImageTk.PhotoImage(resized_pic)
+
+    # Create a canvas to display the image
+    canvas = tk.Canvas(save_window, width=screen_width, height=screen_height, bg='#36393e')
+    canvas.pack()
+
+    # Place the resized image on the canvas
+    canvas.create_image((screen_width - image_width) // 2, (screen_height - image_height) // 2, anchor=tk.NW, image=image_to_display)
+
+    save_window.mainloop()
+
 
 
 
@@ -220,14 +251,15 @@ def load_template(fileList):
     make_previews(fileList, filenames)
 
 def make_previews(fileList, filenames):
+    global globalFileList, labelsList
     row, col = 5, 1
     row += int(len(globalFileList) / 3)
     col += len(globalFileList) % 3
 
-    #calculate the total width of all images
+    # Calculate the total width of all images
     total_width = len(filenames) * 100  # Assuming each image is 100x100
 
-    #calculate the starting position to center the images
+    # Calculate the starting position to center the images
     start_x = (frame.winfo_width() - total_width) // 2
 
     for files in filenames:
@@ -237,10 +269,10 @@ def make_previews(fileList, filenames):
 
     for i in range(len(filenames)):
         img = Image.open(filenames[i])
-        img = img.resize((100, 100))  # Resize the image
+        img = img.resize((100, 100))  # Resize the image to 100x100
         img = ImageTk.PhotoImage(img)
 
-        #create a label to display the image
+        # Create a label to display the image
         label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center", bg="#deb6ab")
         label.index = i + labelsListLen
         label.bind("<Button-1>", lambda event, lab=label: delete_file(globalFileList, lab))
@@ -250,14 +282,13 @@ def make_previews(fileList, filenames):
         label.bind("<Leave>", lambda event, lab=label: returnImage(lab))
         labelsList.append(label)
 
-        progressbar.stop()
-        #show the image
+        # Show the image
         if col == 3:
-            #start a new line after the third column
+            # Start a new line after the third column
             row += 1
             col = 1
         else:
-            #within the same row
+            # Within the same row
             col += 1
 
     frame.update_idletasks()
@@ -266,6 +297,12 @@ def make_previews(fileList, filenames):
         frame.grid_rowconfigure(row, weight=1)
         frame.grid_columnconfigure(col, weight=1)
         label.grid_configure(padx=(start_x, 1))  # Set the same padding for all images in the row
+
+    # Set consistent spacing between images
+    padding_x = (frame.winfo_width() - total_width) // (len(filenames) + 1)
+    for label in labelsList:
+        label.grid_configure(padx=(padding_x, 1))
+
 
 
 def delete_file(fileList, label):
