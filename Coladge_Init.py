@@ -453,6 +453,6 @@ tu = CustomTooltip(update_button, "Begin creating collage")
 #show_welcome_screen()
 
 if __name__ == "__main__":
-    root.iconphoto(False, tk.PhotoImage(file=icon_path))
+    #root.iconphoto(False, tk.PhotoImage(file=icon_path))
     main()
     root.mainloop()

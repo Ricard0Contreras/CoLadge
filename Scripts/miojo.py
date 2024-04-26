@@ -101,7 +101,7 @@ def save_template(listForTemplate,x,y):
        np.save(savePath,listForTemplate)
        tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
    else:
-       np.save(savePath+x+'x'+y+'.npy',listForTemplate)
+       np.save(savePath+'.'+x+'x'+y+'.npy',listForTemplate)
        tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
 
 
