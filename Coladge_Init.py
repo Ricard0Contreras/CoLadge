@@ -208,7 +208,7 @@ def load_template(fileList):
     f_types = [('Template Files', '*.npy*')]
     dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
     templatePath = tk.filedialog.askopenfilename(initialdir=dirTemplates, title='Select Template', filetypes=f_types)
-    # print(templatePath) # Debug
+    #print(templatePath) # Debug
     templateData = np.load(templatePath)
     filenames = templateData
     make_previews(fileList, filenames)
@@ -217,6 +217,12 @@ def make_previews(fileList, filenames):
     row, col = 5, 1
     row += int(len(globalFileList) / 3)
     col += len(globalFileList) % 3
+
+    #calculate the total width of all images
+    total_width = len(filenames) * 100  # Assuming each image is 100x100
+
+    #calculate the starting position to center the images
+    start_x = (frame.winfo_width() - total_width) // 2
 
     for files in filenames:
         globalFileList.append(files)
@@ -229,7 +235,7 @@ def make_previews(fileList, filenames):
         img = img.resize((100, 100))  # Resize the image
         img = ImageTk.PhotoImage(img)
 
-        # Create a label to display the image
+        #create a label to display the image
         label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center", bg="#deb6ab")
         label.index = i + labelsListLen
         label.bind("<Button-1>", lambda event, lab=label: delete_file(globalFileList, lab))
@@ -240,14 +246,21 @@ def make_previews(fileList, filenames):
         labelsList.append(label)
 
         progressbar.stop()
-        # Show the image
+        #show the image
         if col == 3:
-            # Start a new line after the third column
+            #start a new line after the third column
             row += 1
             col = 1
         else:
-            # Within the same row
+            #within the same row
             col += 1
+
+    frame.update_idletasks()
+    # Center the images horizontally
+    for label in labelsList:
+        frame.grid_rowconfigure(row, weight=1)
+        frame.grid_columnconfigure(col, weight=1)
+        label.grid_configure(padx=(start_x, 1))  # Set the same padding for all images in the row
 
 
 def delete_file(fileList, label):
