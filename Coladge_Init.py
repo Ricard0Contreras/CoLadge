@@ -147,7 +147,7 @@ def run_code(imageList, xVal, yVal,q ,q2):
     q2.put_nowait(resultPic)
 
 def save_picture(pic, picList, x, y):
-    def run_code():
+    def run_code(pic):
         savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', filetypes=[('PNG Files', '*.png')])
         if '.png' in savePath:
             pic.save(savePath)
@@ -179,7 +179,7 @@ def save_picture(pic, picList, x, y):
     saveTemp_button = tk.Button(title_bar, text="Save Template", bg='#f8ecd1', fg='black', command=lambda: miojo.save_template(picList, x, y))
     saveTemp_button.pack(side=tk.RIGHT, padx=10)
 
-    save_button = tk.Button(title_bar, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code())
+    save_button = tk.Button(title_bar, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code(pic))
     save_button.pack(side=tk.RIGHT, padx=10)
 
     # Get the user's screen resolution
