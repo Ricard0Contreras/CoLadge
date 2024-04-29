@@ -148,7 +148,7 @@ def run_code(imageList, xVal, yVal,q ,q2):
 
 def save_picture(pic, picList, x, y):
     def run_code(pic):
-        savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', filetypes=[('PNG Files', '*.png')])
+        savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', initialdir=os.path.expanduser('~'), filetypes=[('PNG Files', '*.png')])
         if '.png' in savePath:
             pic.save(savePath)
             tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
@@ -231,7 +231,7 @@ def on_frame_configure(canvas):
 def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
     progressbar.start(5)
-    filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
+    filenames = tk.filedialog.askopenfilenames(initialdir=os.path.expanduser('~')+os.sep()+'Pictures'+os.sep(), multiple=True, filetypes=f_types)
     if len(filenames) == 0:
         progressbar.stop()
         return
