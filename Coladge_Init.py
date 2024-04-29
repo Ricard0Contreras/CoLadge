@@ -95,28 +95,27 @@ def pass_data(imageList):
     x_input = column_scale.get()
     y_input = row_scale.get()
     if len(imageList) > x_input * y_input:
-        tk.messagebox.showerror('Error', 'Remove Pictures to fit size')
+        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Remove Pictures to fit size')
     elif len(imageList) < x_input * y_input:
-        tk.messagebox.showerror('Error', 'Add more pictures to fit size')
-    else:
-        #print(f"Selected rows: {x_input}") #Debug
-        #print(f"Selected columns: {y_input}") #Debug
+        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Add more pictures to fit size')
 
+    else:
         global progressbar
         progressbar.start(5)
 
-        #Loading screen when the processing starts
+        #Loading screen when processing starts
         global loading_screen
+        global loadingLabel
+
         loading_screen = tk.Tk()
         loading_screen.overrideredirect(True)
         loading_screen.title("Loading")
-        global loadingLabel
-        loadingLabel = tk.Label(loading_screen, text="Processing ...")
+        loadingLabel = tk.Label(loading_screen, borderwidth='2' , text="Processing ...", bg='#36393e', fg='#f8ecd1')
         loadingLabel.pack()
         center_window(loading_screen, 150, 75)
         loading_screen.attributes('-topmost', True)
-        progressbar.start(5)
-        loading_screen.after(200, lambda: config_Coladge(imageList, x_input, y_input))
+        loading_screen.config(bg='#36393e')
+        loading_screen.after(500, lambda: config_Coladge(imageList, x_input, y_input))
         loading_screen.mainloop()
 
 
@@ -127,7 +126,6 @@ def config_Coladge(imgLisg, xValue, yValue):
     global progressbar
     progressbar.start(5)
     coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
-    #processed_picList, resultPic = run_code(imgLisg, xValue, yValue)
     coladgeThread.start() # Start processing of coladge
 
     coladgeThread.join() # Must finish the processing before continuing
@@ -136,13 +134,12 @@ def config_Coladge(imgLisg, xValue, yValue):
     proccessed_picList = q.get_nowait() # Result data 
     resultPic = q2.get_nowait()
 
-    save_picture(resultPic, proccessed_picList, str(xValue), str(yValue)) # Saving results as user desires
+    save_picture(resultPic, proccessed_picList, str(xValue), str(yValue))
 
 
 def run_code(imageList, xVal, yVal,q ,q2):
     time.sleep(1)
     proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
-    #return proccessed_picList, resultPic
     q.put_nowait(proccessed_picList)
     q2.put_nowait(resultPic)
 
@@ -218,6 +215,7 @@ def save_picture(pic, picList, x, y):
     canvas.create_image((screen_width - image_width) // 2, (screen_height - image_height) // 2, anchor=tk.NW, image=image_to_display)
     progressbar.stop()
 
+    save_window.attributes("-fullscreen", not save_window.attributes("-fullscreen"))
     save_window.mainloop()
 
 
@@ -230,8 +228,9 @@ def on_frame_configure(canvas):
 
 def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
+    pictureDirPath = os.path.expanduser('~')+os.sep+'Pictures'+os.sep
     progressbar.start(5)
-    filenames = tk.filedialog.askopenfilenames(initialdir=os.path.expanduser('~')+os.sep()+'Pictures'+os.sep(), multiple=True, filetypes=f_types)
+    filenames = tk.filedialog.askopenfilenames(initialdir= pictureDirPath, multiple=True, filetypes=f_types)
     if len(filenames) == 0:
         progressbar.stop()
         return
@@ -420,7 +419,7 @@ root.title('COLadge')
 root.config(bg='#36393e')
 
 #icon path
-icon_path = 'GUI' + os.sep + 'Icon.ico'
+icon_path = os.getcwd() + os.sep +'GUI' + os.sep + 'Icon.png'
 
 #program dimensions
 scaleW = int(root.winfo_screenwidth() * 0.3)
@@ -459,7 +458,7 @@ template_button = tk.Button(root, text="Load Template", bg='#f8ecd1', fg='black'
 template_button.place(anchor='n', x=scaleW * 0.65, y=scaleH * 0.12)
 
 #Make Coladge Button
-update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
+update_button = tk.Button(root, text="Make CoLodge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
 update_button.place(in_=frame, anchor='n', x=scaleW * 0.108, y=scaleH * 0.88)
 
 # Progress bar
@@ -471,9 +470,8 @@ progressbar.place(anchor= 'n', x=scaleW * 0.07, y=scaleH * 0.97, width=scaleW * 
 tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
 t = CustomTooltip(fileSel_button, "Allows user to upload images")
 tu = CustomTooltip(update_button, "Begin creating collage")
-#show_welcome_screen()
 
 if __name__ == "__main__":
-    #root.iconphoto(False, tk.PhotoImage(file=icon_path))
+    root.iconphoto(False, tk.PhotoImage(file=icon_path))
     main()
     root.mainloop()
