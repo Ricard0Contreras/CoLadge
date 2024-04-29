@@ -89,7 +89,7 @@ def save_template(listForTemplate,x,y):
    for n in range(len(listForTemplate)):
        listForTemplate[n] = cachePath + listForTemplate[n] 
 
-   f_types = [('Template Files', '*.npy*')]
+   f_types = [('Template Files', '*.npy')]
    dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
    savePath = tk.filedialog.asksaveasfilename(initialdir=dirTemplates, title='Enter Save Location', filetypes=f_types)
 

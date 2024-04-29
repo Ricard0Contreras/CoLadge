@@ -227,7 +227,7 @@ def on_frame_configure(canvas):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 def upload_file(fileList):
-    f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
+    f_types = [('JPG Files and PNG Files', '*.jpg and *.png'), ('PNG Files', '*.png')]
     pictureDirPath = os.path.expanduser('~')+os.sep+'Pictures'+os.sep
     progressbar.start(5)
     filenames = tk.filedialog.askopenfilenames(initialdir= pictureDirPath, multiple=True, filetypes=f_types)
@@ -238,7 +238,7 @@ def upload_file(fileList):
     make_previews(fileList, filenames)
 
 def load_template(fileList):
-    f_types = [('Template Files', '*.npy*')]
+    f_types = [('Template Files', '*.npy')]
     progressbar.start(5)
     dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
     templatePath = tk.filedialog.askopenfilename(initialdir=dirTemplates, title='Select Template', filetypes=f_types)
