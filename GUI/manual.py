@@ -19,7 +19,7 @@ def instruction_page(root):
     new_window = tk.Toplevel(root)
     new_window.title("How to use")
 
-    icon_path = 'GUI' + os.sep + 'Icon.ico'
+    icon_path = 'GUI' + os.sep + 'Icon.png'
 
     #set window icon
     new_window.iconphoto(False, tk.PhotoImage(file=icon_path))
@@ -41,23 +41,30 @@ def instruction_page(root):
     instruction_body.tag_configure("lighter_color", foreground="#f8ecd1")
     #insert text
     instruction_body.insert(tk.END, """
-                      CoLodge User Manuel
+                      CoLodge User Manual
 
     Name:
-            Color Collage
+            Color Collage - Colorful and Simple Collage organizer
                                         
     Description:
             User-friendly program used to create a collage
             of images that are automatically sorted by their
             colors.
                                         
-    Using Input Form:
+    Using CoLodge:
             Using Images
-                    - Add images by clicking the 'Upload Files'
-                    button. You will be able to scroll through
-                    the images you add by using the scroll bar
-                    to the right.
+                    - Add images by clicking the 'Upload Images'
+                    button. You will be able to view a preview 
+                    of the images you add, use the sroll bar to
+                    to view the rest.
+            Using Templates
+                    - Tap on the 'Load Template' button to open 
+                    the templates folder, select one of the many
+                    included templates to find the combination that
+                    best fits you. You can save a Coladge you like
+                    as a template to later add more pictures to it.
             Deleting Images
+<<<<<<< HEAD
                     - Hover over an image you wish to remove
                     and click on the red X that appears to
                     delete.
@@ -70,15 +77,28 @@ def instruction_page(root):
                     - After images and size variable criteria
                     have been met, click the 'Make Collage'
                     button tobegin compiling your color collage.""")
+=======
+                    - Hover over an image you wish to remove and
+                    click on the red X that appears to delete.
+            Setting CoLodge Size
+                    - Use the scrollers on the bottom half of the
+                    window to change your rows (x) and columns
+                    (y) to customize what final size you would
+                    like your collage to be.
+            Create CoLodge
+                    - After images and size variable criteria have
+                    been met, click the 'Make Collage' button to
+                    begin compiling your color collage.""")
+>>>>>>> 98a304d80fae8db8996e500aa09a9950e2ed8144
 
      #apply tags to specific words
-    for word in ["CoLodge User Manuel", "Name:", "Description:", "Using Input Form:", "Using Images", "Deleting Images", "Selecting Collage Size", "Create Collage"]:
+    for word in ["CoLodge User Manual", "Name:", "Description:", "Using CoLodge:", "Using Images", "Using Templates", "Deleting Images", "Setting CoLodge Size", "Create CoLodge"]:
         for pos in find_word(instruction_body, word):
             end = f"{pos}+{len(word)}c"
             if word == "Name:":
                 instruction_body.tag_add("bold", pos, end)
                 instruction_body.tag_add("mid_color", pos, end)
-            elif word in ["Description:", "Using Input Form:"]:
+            elif word in ["Description:", "Using CoLodge:"]:
                 instruction_body.tag_add("bold", pos, end)
                 instruction_body.tag_add("bold", pos, end)
                 instruction_body.tag_add("mid_color", pos, end)
@@ -86,12 +106,13 @@ def instruction_page(root):
                 instruction_body.tag_add("big_bold", pos, end)
                 instruction_body.tag_add("darker_color", pos, end)
                 
-            elif word in ["Using Images", "Deleting Images", "Selecting Collage Size", "Create Collage"]:
+            elif word in ["Using Images", "Using Templates", "Deleting Images", "Setting CoLodge Size", "Create CoLodge"]:
                 instruction_body.tag_add("bold", pos, end)
                 instruction_body.tag_add("lighter_color", pos, end)
 
     instruction_body.config(state=tk.DISABLED)
     instruction_body.pack()
+<<<<<<< HEAD
 
 
 def close_welcome_screen():
@@ -110,3 +131,5 @@ def show_welcome_screen():
     okay_button.pack(pady=10)
     #timed close
     welcome_screen.after(3000, close_welcome_screen)
+=======
+>>>>>>> 98a304d80fae8db8996e500aa09a9950e2ed8144

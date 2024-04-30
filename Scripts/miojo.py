@@ -89,15 +89,9 @@ def save_template(listForTemplate,x,y):
    for n in range(len(listForTemplate)):
        listForTemplate[n] = cachePath + listForTemplate[n] 
 
-   f_types = [('Template Files', '*.npy*')]
+   f_types = [('Template Files', '*.npy')]
    dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
-   savePath = tk.filedialog.asksaveasfilename(initialdir=dirTemplates, filetypes=f_types)
-   while savePath == '':
-       savePath = tk.filedialog.asksaveasfilename(title='Enter Save location')
-       if savePath == '': 
-            ans = tk.messagebox.askyesno(":(", "Do you want to Cancel the operation?")
-            if ans == True:
-                break
+   savePath = tk.filedialog.asksaveasfilename(initialdir=dirTemplates, title='Enter Save Location', filetypes=f_types)
 
    if '.npy' in savePath:
        np.save(savePath,listForTemplate)

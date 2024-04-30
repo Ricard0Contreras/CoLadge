@@ -95,28 +95,27 @@ def pass_data(imageList):
     x_input = column_scale.get()
     y_input = row_scale.get()
     if len(imageList) > x_input * y_input:
-        tk.messagebox.showerror('Error', 'Remove Pictures to fit size')
+        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Remove Pictures to fit size')
     elif len(imageList) < x_input * y_input:
-        tk.messagebox.showerror('Error', 'Add more pictures to fit size')
-    else:
-        #print(f"Selected rows: {x_input}") #Debug
-        #print(f"Selected columns: {y_input}") #Debug
+        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Add more pictures to fit size')
 
+    else:
         global progressbar
         progressbar.start(5)
 
-        #Loading screen when the processing starts
+        #Loading screen when processing starts
         global loading_screen
+        global loadingLabel
+
         loading_screen = tk.Tk()
         loading_screen.overrideredirect(True)
         loading_screen.title("Loading")
-        global loadingLabel
-        loadingLabel = tk.Label(loading_screen, text="Processing ...")
+        loadingLabel = tk.Label(loading_screen, borderwidth='2' , text="Processing ...", bg='#36393e', fg='#f8ecd1')
         loadingLabel.pack()
         center_window(loading_screen, 150, 75)
         loading_screen.attributes('-topmost', True)
-        progressbar.start(5)
-        loading_screen.after(200, lambda: config_Coladge(imageList, x_input, y_input))
+        loading_screen.config(bg='#36393e')
+        loading_screen.after(500, lambda: config_Coladge(imageList, x_input, y_input))
         loading_screen.mainloop()
 
 
@@ -127,7 +126,6 @@ def config_Coladge(imgLisg, xValue, yValue):
     global progressbar
     progressbar.start(5)
     coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
-    #processed_picList, resultPic = run_code(imgLisg, xValue, yValue)
     coladgeThread.start() # Start processing of coladge
 
     coladgeThread.join() # Must finish the processing before continuing
@@ -136,22 +134,18 @@ def config_Coladge(imgLisg, xValue, yValue):
     proccessed_picList = q.get_nowait() # Result data 
     resultPic = q2.get_nowait()
 
-    save_picture(resultPic, proccessed_picList, str(xValue), str(yValue)) # Saving results as user desires
+    save_picture(resultPic, proccessed_picList, str(xValue), str(yValue))
 
 
 def run_code(imageList, xVal, yVal,q ,q2):
     time.sleep(1)
     proccessed_picList, resultPic = miojo.makeCollage(imageList, xVal, yVal)
-    #return proccessed_picList, resultPic
     q.put_nowait(proccessed_picList)
     q2.put_nowait(resultPic)
 
-'''
-miojo.saveTemplate() REMEMBER TO USE IT
-'''
 def save_picture(pic, picList, x, y):
-    def run_code():
-        savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', filetypes=[('PNG Files', '*.png')])
+    def run_code(pic):
+        savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', initialdir=os.path.expanduser('~'), filetypes=[('PNG Files', '*.png')])
         if '.png' in savePath:
             pic.save(savePath)
             tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
@@ -182,7 +176,7 @@ def save_picture(pic, picList, x, y):
     saveTemp_button = tk.Button(title_bar, text="Save Template", bg='#f8ecd1', fg='black', command=lambda: miojo.save_template(picList, x, y))
     saveTemp_button.pack(side=tk.RIGHT, padx=10)
 
-    save_button = tk.Button(title_bar, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code())
+    save_button = tk.Button(title_bar, text="Save Picture as ...", bg='#f8ecd1', fg='black', command=lambda: run_code(pic))
     save_button.pack(side=tk.RIGHT, padx=10)
 
     # Get the user's screen resolution
@@ -219,7 +213,9 @@ def save_picture(pic, picList, x, y):
 
     # Place the resized image on the canvas
     canvas.create_image((screen_width - image_width) // 2, (screen_height - image_height) // 2, anchor=tk.NW, image=image_to_display)
+    progressbar.stop()
 
+    save_window.attributes("-fullscreen", not save_window.attributes("-fullscreen"))
     save_window.mainloop()
 
 
@@ -231,36 +227,39 @@ def on_frame_configure(canvas):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 def upload_file(fileList):
-    f_types = [('JPG Files and PNG Files', '*.jpg and .png*'), ('PNG Files', '*.png')]
-    filenames = tk.filedialog.askopenfilenames(multiple=True, filetypes=f_types)
+    f_types = [('JPG Files and PNG Files', '*.jpg and *.png'), ('PNG Files', '*.png')]
+    pictureDirPath = os.path.expanduser('~')+os.sep+'Pictures'+os.sep
+    progressbar.start(5)
+    filenames = tk.filedialog.askopenfilenames(initialdir= pictureDirPath, multiple=True, filetypes=f_types)
     if len(filenames) == 0:
+        progressbar.stop()
         return
     #start from row 5 and column 1
-    progressbar.start(5)
     make_previews(fileList, filenames)
 
 def load_template(fileList):
-    f_types = [('Template Files', '*.npy*')]
+    f_types = [('Template Files', '*.npy')]
+    progressbar.start(5)
     dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
     templatePath = tk.filedialog.askopenfilename(initialdir=dirTemplates, title='Select Template', filetypes=f_types)
     if templatePath == '':
+        progressbar.stop()
         return None
     templateData = np.load(templatePath)
     filenames = templateData
-    progressbar.start(5)
     make_previews(fileList, filenames)
 
 def make_previews(fileList, filenames):
-    global globalFileList, labelsList
+    global globalFileList, labelsList, canvas_file_selector
     row, col = 5, 1
     row += int(len(globalFileList) / 3)
     col += len(globalFileList) % 3
 
-    # Calculate the total width of all images
-    total_width = len(filenames) * 100  # Assuming each image is 100x100
+    # Calculates the size of the previews
+    previewSize = int((canvas_file_selector.winfo_width() - 16) // 3)
 
-    # Calculate the starting position to center the images
-    start_x = (frame.winfo_width() - total_width) // 2
+    # Calculate the total width of all images
+    total_width = len(filenames) * previewSize  
 
     for files in filenames:
         globalFileList.append(files)
@@ -269,8 +268,9 @@ def make_previews(fileList, filenames):
 
     for i in range(len(filenames)):
         img = Image.open(filenames[i])
-        img = img.resize((100, 100))  # Resize the image to 100x100
+        img = img.resize((previewSize, previewSize))  # Resize the image
         img = ImageTk.PhotoImage(img)
+        progressbar.stop()
 
         # Create a label to display the image
         label = tk.Label(frame, text="", font=("Arial", 70), image=img, compound="center", bg="#deb6ab")
@@ -292,21 +292,12 @@ def make_previews(fileList, filenames):
             col += 1
 
     frame.update_idletasks()
-    # Center the images horizontally
     for label in labelsList:
         frame.grid_rowconfigure(row, weight=1)
         frame.grid_columnconfigure(col, weight=1)
-        label.grid_configure(padx=(start_x, 1))  # Set the same padding for all images in the row
-
-    # Set consistent spacing between images
-    padding_x = (frame.winfo_width() - total_width) // (len(filenames) + 1)
-    for label in labelsList:
-        label.grid_configure(padx=(padding_x, 1))
-
 
 
 def delete_file(fileList, label):
-    #if label.index < len(fileList):
     #deletes the file name of the image deleted
     index = label.index
     label.destroy()
@@ -316,29 +307,22 @@ def delete_file(fileList, label):
     del fileList[index]
     del labelsList[index]
 
-    # print("Delete File: " + str(labelsList)) #Debug
-    # print() #Degug
     update_labels()
 
 def update_labels():
     global labelsList
-
     # Start from row 5 and column 1
     row, col = 5, 1
 
     tempLabelsList = []
     tempIndex = 0
 
-    #print("Update Labels: " + str(labelsList)) # Debug
-    #print() #Debug
     for label in labelsList:
-        
         image = label.image
         
         newLabel = tk.Label(frame, text="", font=("Arial", 70), image=image, compound="center")
         newLabel.grid(in_=frame, row=row, column=col)
         newLabel.image = image  # Keep a reference!
-        
         newLabel.index = tempIndex
         newLabel.bind("<Button-1>",lambda event, lab = newLabel: delete_file(globalFileList, lab))
         newLabel.bind("<Enter>", lambda event, lab=newLabel: changeImage(lab))
@@ -354,17 +338,15 @@ def update_labels():
             col += 1
         
         tempIndex += 1
-      
 
     for i in range(len(labelsList) - 1, -1, -1):
         label = labelsList[i]
         label.destroy()
         del labelsList[i]
 
-
     for lab in tempLabelsList:
         labelsList.append(lab)
-    
+
 
 def changeImage(label):
     label.config(text="X", foreground="red")
@@ -396,47 +378,58 @@ class CustomTooltip:
             self.tooltip_label.place_forget()
             self.tooltip_visible = False
 
-def create_main_frame():
-    global myframe, frame, myscrollbar
+def create_file_frame():
+    global main_file_selector, canvas_file_selector, frame, file_preview_scrollbar
+    global frame_width
     frame_width = scaleW * 0.9
     frame_height = scaleH * 0.626
     canvas_width = frame_width * 0.9
     canvas_height = frame_height * 0.626
     # create the main frame
-    myframe = tk.Frame(root, relief=tk.GROOVE, bd=4, bg='#deb6ab', width=frame_width, height=frame_height,
+    main_file_selector = tk.Frame(root, relief=tk.GROOVE, bd=4, bg='#deb6ab', width=frame_width, height=frame_height,
                        highlightbackground="#85586f", highlightcolor="#85586f")
-    myframe.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.18)
+    main_file_selector.place(anchor='n', x=scaleW * 0.5, y=scaleH * 0.18)
     # create a canvas inside the main frame
-    canvas = tk.Canvas(myframe, width=canvas_width, height=canvas_height, bg='#deb6ab', highlightbackground="#85586f", highlightcolor="#85586f")
-    canvas.pack(side="left")
+    canvas_file_selector = tk.Canvas(main_file_selector, width=canvas_width, height=canvas_height, bg='#deb6ab', highlightbackground="#85586f", highlightcolor="#85586f")
+    canvas_file_selector.pack(side="left")
     # create a custom style for the vertical scrollbar
     style = ttk.Style()
     style.configure("Vertical.TScrollbar", troughcolor='#685dce', background='#685dce',
                     gripcount=0, arrowsize=15, gripcolor='#ac6cda', troughrelief='flat', gripborderwidth=0)
     # create the vertical scrollbar
-    myscrollbar = ttk.Scrollbar(myframe, orient="vertical", command=canvas.yview, style="Vertical.TScrollbar")
-    canvas.configure(yscrollcommand=myscrollbar.set)
-    myscrollbar.pack(side="right", fill="y")
+    file_preview_scrollbar = ttk.Scrollbar(main_file_selector, orient="vertical", command=canvas_file_selector.yview, style="Vertical.TScrollbar")
+    canvas_file_selector.configure(yscrollcommand=file_preview_scrollbar.set)
+    file_preview_scrollbar.pack(side="right", fill="y")
     # attach the scrollable frame to the canvas
-    frame = tk.Frame(canvas)
-    canvas.create_window((0, 0), window=frame, anchor='nw')
+    frame = tk.Frame(canvas_file_selector)
+    canvas_file_selector.create_window((0, 0), window=frame, anchor='nw')
     # bind the function to the frame's configuration event
-    frame.bind("<Configure>", lambda event, canvas=canvas: on_frame_configure(canvas))
+    frame.bind("<Configure>", lambda event, canvas=canvas_file_selector: on_frame_configure(canvas_file_selector))
 
 
 def main():
     create_canvas()
     create_rectangles()
     create_scales()
-    create_main_frame()
+    create_file_frame()
     
+''' Color Pallet
+nutral- #36393e
+dark- #ae8a8c
+mid- #deb6ab
+light- #f8ecd1
+active- #97335e
+rectangles- #ac7d88
+trough- #85586f
+'''
+
 #INNICIATION OF PLACEMENTS
 root = tk.Tk()
 root.title('COLadge')
 root.config(bg='#36393e')
 
 #icon path
-icon_path = 'GUI' + os.sep + 'Icon.ico'
+icon_path = os.getcwd() + os.sep +'GUI' + os.sep + 'Icon.png'
 
 #program dimensions
 scaleW = int(root.winfo_screenwidth() * 0.3)
@@ -475,7 +468,7 @@ template_button = tk.Button(root, text="Load Template", bg='#f8ecd1', fg='black'
 template_button.place(anchor='n', x=scaleW * 0.65, y=scaleH * 0.12)
 
 #Make Coladge Button
-update_button = tk.Button(root, text="Make CoLadge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
+update_button = tk.Button(root, text="Make CoLodge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
 update_button.place(in_=frame, anchor='n', x=scaleW * 0.108, y=scaleH * 0.88)
 
 # Progress bar
@@ -487,9 +480,8 @@ progressbar.place(anchor= 'n', x=scaleW * 0.07, y=scaleH * 0.97, width=scaleW * 
 tooltip = CustomTooltip(instruction_page, "Instructions on how to use COLadge")
 t = CustomTooltip(fileSel_button, "Allows user to upload images")
 tu = CustomTooltip(update_button, "Begin creating collage")
-#show_welcome_screen()
 
 if __name__ == "__main__":
-    #root.iconphoto(False, tk.PhotoImage(file=icon_path))
+    root.iconphoto(False, tk.PhotoImage(file=icon_path))
     main()
     root.mainloop()
