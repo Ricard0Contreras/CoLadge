@@ -64,20 +64,6 @@ def instruction_page(root):
                     best fits you. You can save a Coladge you like
                     as a template to later add more pictures to it.
             Deleting Images
-<<<<<<< HEAD
-                    - Hover over an image you wish to remove
-                    and click on the red X that appears to
-                    delete.
-            Selecting Collage Size
-                    - Use the scrollers on the bottom half of the
-                    window to change your rows (x) and
-                    columns (y) to customize what final size you
-                    would like your collage to be.
-            Create Collage
-                    - After images and size variable criteria
-                    have been met, click the 'Make Collage'
-                    button tobegin compiling your color collage.""")
-=======
                     - Hover over an image you wish to remove and
                     click on the red X that appears to delete.
             Setting CoLodge Size
@@ -89,7 +75,6 @@ def instruction_page(root):
                     - After images and size variable criteria have
                     been met, click the 'Make Collage' button to
                     begin compiling your color collage.""")
->>>>>>> 98a304d80fae8db8996e500aa09a9950e2ed8144
 
      #apply tags to specific words
     for word in ["CoLodge User Manual", "Name:", "Description:", "Using CoLodge:", "Using Images", "Using Templates", "Deleting Images", "Setting CoLodge Size", "Create CoLodge"]:
@@ -112,7 +97,6 @@ def instruction_page(root):
 
     instruction_body.config(state=tk.DISABLED)
     instruction_body.pack()
-<<<<<<< HEAD
 
 
 def close_welcome_screen():
@@ -131,5 +115,3 @@ def show_welcome_screen():
     okay_button.pack(pady=10)
     #timed close
     welcome_screen.after(3000, close_welcome_screen)
-=======
->>>>>>> 98a304d80fae8db8996e500aa09a9950e2ed8144
