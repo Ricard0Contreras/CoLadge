@@ -77,7 +77,7 @@ def instruction_page(root):
                 instruction_body.tag_add("bold", pos, end)
                 instruction_body.tag_add("bold", pos, end)
                 instruction_body.tag_add("mid_color", pos, end)
-            elif word in ["CoLodge User Manuel"]:
+            elif word in ["CoLodge User Manual"]:
                 instruction_body.tag_add("big_bold", pos, end)
                 instruction_body.tag_add("darker_color", pos, end)
                 
