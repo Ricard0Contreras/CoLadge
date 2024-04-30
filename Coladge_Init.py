@@ -460,16 +460,16 @@ instruction_page = tk.Button(root, text="?", bd=0.5, bg="#f8ecd1", fg="black", a
 instruction_page.place(anchor='n', x=scaleW * 0.028, y=scaleH * 0.01)
 
 # upload file button
-fileSel_button = tk.Button(root, text='Upload Images', width=20, bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
-fileSel_button.place(anchor='n', x=scaleW * 0.35, y=scaleH * 0.12)
+fileSel_button = tk.Button(root, text='Upload Images',  bg='#f8ecd1', activebackground="#97335e", command=lambda: upload_file(globalFileList))
+fileSel_button.place(anchor='n', x=scaleW * 0.34, y=scaleH * 0.12)
 
 #Template Button
 template_button = tk.Button(root, text="Load Template", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: load_template(globalFileList))
-template_button.place(anchor='n', x=scaleW * 0.65, y=scaleH * 0.12)
+template_button.place(anchor='n', x=scaleW * 0.66, y=scaleH * 0.12)
 
 #Make Coladge Button
 update_button = tk.Button(root, text="Make CoLodge", bg='#f8ecd1', fg='black', activebackground="#97335e", command= lambda: pass_data(globalFileList))
-update_button.place(in_=frame, anchor='n', x=scaleW * 0.108, y=scaleH * 0.88)
+update_button.place(in_=frame, anchor='n', x=scaleW * 0.108, y=scaleH * 0.87)
 
 # Progress bar
 progressbar = ttk.Progressbar()

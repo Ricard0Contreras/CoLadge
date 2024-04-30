@@ -87,21 +87,3 @@ def instruction_page(root):
 
     instruction_body.config(state=tk.DISABLED)
     instruction_body.pack()
-
-
-def close_welcome_screen():
-    welcome_screen.destroy()
-
-def show_welcome_screen():
-    global welcome_screen
-    welcome_screen = tk.Toplevel(root)
-    welcome_screen.overrideredirect(True)
-    welcome_screen_width = 300
-    welcome_screen_height = 900
-    center_window(welcome_screen, welcome_screen_width, welcome_screen_height)
-    welcome_label = tk.Label(welcome_screen, text="Welcome to COLadge! Enjoy creating your collages!", padx=20, pady=20)
-    welcome_label.pack()
-    okay_button = tk.Button(welcome_screen, text="Okay", command=close_welcome_screen)
-    okay_button.pack(pady=10)
-    #timed close
-    welcome_screen.after(3000, close_welcome_screen)
