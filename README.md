@@ -1,14 +1,15 @@
 # CoLadge
+<div align="center">
 <br>
 <picture>
   <img alt="CoLadge Logo" src="https://github.com/Ricard0Contreras/CoLadge/raw/main/GUI/Icon.png" height="200px">
+</picture>
 <br>
 CoLadge
-</div>
 A GENIUS wordplay:
 *Colorful* and cozy **Lodge** Picture group 
-</div>
 *Colage*
+</div>
 <br>
 
 # 🎨🖼 ~CoLadge~  
