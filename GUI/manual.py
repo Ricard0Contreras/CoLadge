@@ -41,40 +41,30 @@ def instruction_page(root):
     instruction_body.tag_configure("lighter_color", foreground="#f8ecd1")
     #insert text
     instruction_body.insert(tk.END, """
-                      CoLodge User Manual
+    CoLodge User Manual
 
     Name:
             Color Collage - Colorful and Simple Collage organizer
                                         
     Description:
-            User-friendly program used to create a collage
-            of images that are automatically sorted by their
-            colors.
+            User-friendly program used to create a collage of images that are automatically sorted by their colors.
                                         
-    Using CoLodge:
-            Using Images
-                    - Add images by clicking the 'Upload Images'
-                    button. You will be able to view a preview 
-                    of the images you add, use the sroll bar to
-                    to view the rest.
-            Using Templates
-                    - Tap on the 'Load Template' button to open 
-                    the templates folder, select one of the many
-                    included templates to find the combination that
-                    best fits you. You can save a Coladge you like
-                    as a template to later add more pictures to it.
-            Deleting Images
-                    - Hover over an image you wish to remove and
-                    click on the red X that appears to delete.
-            Setting CoLodge Size
-                    - Use the scrollers on the bottom half of the
-                    window to change your rows (x) and columns
-                    (y) to customize what final size you would
-                    like your collage to be.
-            Create CoLodge
-                    - After images and size variable criteria have
-                    been met, click the 'Make Collage' button to
-                    begin compiling your color collage.""")
+    CoLodge Options:
+
+    Using Images
+    - Add images by clicking the 'Upload Images' button. You will be able to view a preview of the images you add, use the sroll bar to to view the rest.
+
+    Using Templates
+    - Tap on the 'Load Template' button to open the templates folder, select one of the many included templates to find the combination that best fits you. You can save a Coladge you like as a template to later add more pictures to it.
+
+    Deleting Images
+    - Hover over an image you wish to remove and click on the red X that appears to delete.
+
+    Setting CoLodge Size
+    - Use the scrollers on the bottom half of the window to change your rows (x) and columns (y) to customize what final size you would like your collage to be.
+
+    Create CoLodge
+    - After images and size variable criteria have been met, click the 'Make Collage' button to begin compiling your color collage.""")
 
      #apply tags to specific words
     for word in ["CoLodge User Manual", "Name:", "Description:", "Using CoLodge:", "Using Images", "Using Templates", "Deleting Images", "Setting CoLodge Size", "Create CoLodge"]:
