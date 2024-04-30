@@ -413,6 +413,16 @@ def main():
     create_scales()
     create_file_frame()
     
+''' Color Pallet
+nutral- #36393e
+dark- #ae8a8c
+mid- #deb6ab
+light- #f8ecd1
+active- #97335e
+rectangles- #ac7d88
+trough- #85586f
+'''
+
 #INNICIATION OF PLACEMENTS
 root = tk.Tk()
 root.title('COLadge')
