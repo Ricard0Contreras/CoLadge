@@ -26,16 +26,16 @@ def instruction_page(root):
 
     #sizing
     width, height = new_window.winfo_screenwidth(), root.winfo_screenheight()
-    scaleW = int(width * 0.25)
-    scaleH = int(height * 0.51)
+    scaleW = int(width * 0.26)
+    scaleH = int(height * 0.565)
     new_window.geometry(f"{scaleW}x{scaleH}+0+0")
     new_window.maxsize(scaleW, scaleH)
     new_window.minsize(scaleW, scaleH)
 
     #text for instructions
-    instruction_body = tk.Text(new_window, wrap="word", bg="#36393e", fg="white", font=('Helvetica', 9), height=30)
-    instruction_body.tag_configure("bold", font=('Helvetica', 9, 'bold'))
-    instruction_body.tag_configure("big_bold", font=('Helvetica', 12, 'bold'))
+    instruction_body = tk.Text(new_window, wrap="word", bg="#36393e", fg="white", font=('Helvetica', 12), height=scaleH)
+    instruction_body.tag_configure("bold", font=('Helvetica', 12, 'bold'))
+    instruction_body.tag_configure("big_bold", font=('Helvetica', 14, 'bold'))
     instruction_body.tag_configure("darker_color", foreground="#ae8a8c")
     instruction_body.tag_configure("mid_color", foreground="#deb6ab")
     instruction_body.tag_configure("lighter_color", foreground="#f8ecd1")
@@ -47,8 +47,9 @@ def instruction_page(root):
             Color Collage
                                         
     Description:
-            User-friendly program used to create a collage of
-            images that are automatically sorted by their colors.
+            User-friendly program used to create a collage
+            of images that are automatically sorted by their
+            colors.
                                         
     Using Input Form:
             Using Images
@@ -57,17 +58,18 @@ def instruction_page(root):
                     the images you add by using the scroll bar
                     to the right.
             Deleting Images
-                    - Hover over an image you wish to remove and
-                    click on the red X that appears to delete.
+                    - Hover over an image you wish to remove
+                    and click on the red X that appears to
+                    delete.
             Selecting Collage Size
                     - Use the scrollers on the bottom half of the
-                    window to change your rows (x) and columns
-                    (y) to customize what final size you would
-                    like your collage to be.
+                    window to change your rows (x) and
+                    columns (y) to customize what final size you
+                    would like your collage to be.
             Create Collage
-                    - After images and size variable criteria have
-                    been met, click the 'Make Collage' button to
-                    begin compiling your color collage.""")
+                    - After images and size variable criteria
+                    have been met, click the 'Make Collage'
+                    button tobegin compiling your color collage.""")
 
      #apply tags to specific words
     for word in ["CoLodge User Manuel", "Name:", "Description:", "Using Input Form:", "Using Images", "Deleting Images", "Selecting Collage Size", "Create Collage"]:
@@ -100,7 +102,7 @@ def show_welcome_screen():
     welcome_screen = tk.Toplevel(root)
     welcome_screen.overrideredirect(True)
     welcome_screen_width = 300
-    welcome_screen_height = 200
+    welcome_screen_height = 900
     center_window(welcome_screen, welcome_screen_width, welcome_screen_height)
     welcome_label = tk.Label(welcome_screen, text="Welcome to COLadge! Enjoy creating your collages!", padx=20, pady=20)
     welcome_label.pack()
