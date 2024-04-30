@@ -33,9 +33,9 @@ def instruction_page(root):
     new_window.minsize(scaleW, scaleH)
 
     #text for instructions
-    instruction_body = tk.Text(new_window, wrap="word", bg="#36393e", fg="white", font=('Helvetica', 12), height=scaleH)
-    instruction_body.tag_configure("bold", font=('Helvetica', 12, 'bold'))
-    instruction_body.tag_configure("big_bold", font=('Helvetica', 14, 'bold'))
+    instruction_body = tk.Text(new_window, wrap="word", bg="#36393e", fg="white", font=('Helvetica', 13), height=scaleH)
+    instruction_body.tag_configure("bold", font=('Helvetica', 13, 'bold'))
+    instruction_body.tag_configure("big_bold", font=('Helvetica', 15, 'bold'))
     instruction_body.tag_configure("darker_color", foreground="#ae8a8c")
     instruction_body.tag_configure("mid_color", foreground="#deb6ab")
     instruction_body.tag_configure("lighter_color", foreground="#f8ecd1")
