@@ -1,12 +1,11 @@
-# CoLadge
 <div align="center">
 <br>
 <picture>
   <img alt="CoLadge Logo" src="https://github.com/Ricard0Contreras/CoLadge/raw/main/GUI/Icon.png" height="200px">
 </picture>
 <br>
-**CoLadge**  
-*Colorful* and cozy **Lodge** Picture group *Colage*
+## CoLadge    
+*Colorful* and cozy Picture Organizer
 </div>
 <br>
 
