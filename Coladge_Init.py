@@ -231,7 +231,7 @@ def on_frame_configure(canvas):
 
 def upload_file(fileList):
     f_types = [('JPG Files and PNG Files', '*.jpg and *.png'), ('PNG Files', '*.png')]
-    pictureDirPath = os.path.expanduser('~')+os.sep+'Pictures'+os.sep
+    pictureDirPath = os.path.expanduser('~')+os.sep
     progressbar.start(5)
     filenames = tk.filedialog.askopenfilenames(initialdir= pictureDirPath, multiple=True, filetypes=f_types)
     if len(filenames) == 0:
