@@ -11,7 +11,7 @@
 
 # 🎨💓 CoLadge  
 
-CoLadge is a easy to use application that builds colages from the colors of a set of pictures, export them as a bigger canvas with the resulting color gradient of all the pictures.   
+CoLadge is an easy to use application that builds collages from the colors of a set of pictures, it exports them as a bigger canvas with the resulting color gradient of all the pictures.   
 Written in Python for portability and compatibility.  
 
 ### 📖 License  
