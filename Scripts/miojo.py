@@ -1,4 +1,5 @@
 from Scripts import localDatabase, resize, colorExtraction, canva
+from multiprocessing import Process
 import os, re, sys
 from scipy.optimize import linear_sum_assignment, fsolve
 from scipy.spatial import ConvexHull
@@ -84,6 +85,12 @@ def center_window(window, width, height):
     window.geometry(f"{width}x{height}+{x}+{y}")
 
 def save_template(listForTemplate,x,y):
+   def run_code(savePath, listForTemplate,x,y):
+       if '.npy' in savePath:
+           np.save(savePath[:-4]+'.'+x+'x'+y+'.npy',listForTemplate)
+       else:
+           np.save(savePath+'.'+x+'x'+y+'.npy',listForTemplate)
+
    cachePath = 'Database' + os.sep + 'pictureCache' + os.sep
 
    for n in range(len(listForTemplate)):
@@ -93,12 +100,12 @@ def save_template(listForTemplate,x,y):
    dirTemplates = 'Database' + os.sep + 'Templates' + os.sep
    savePath = tk.filedialog.asksaveasfilename(initialdir=dirTemplates, title='Enter Save Location', filetypes=f_types)
 
-   if '.npy' in savePath:
-       np.save(savePath,listForTemplate)
-       tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
-   else:
-       np.save(savePath+'.'+x+'x'+y+'.npy',listForTemplate)
-       tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
+   if savePath == '':
+        return None
+   save_process = Process(target=lambda: run_code(savePath,listForTemplate,x,y))
+   save_process.start()
+   save_process.join()
+   tk.messagebox.showinfo('Save Complete', 'Saved successfully!')
 
 
 def makeCollage(picList, xPics, yPics):

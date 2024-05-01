@@ -94,6 +94,9 @@ def create_scales():
 def pass_data(imageList):
     x_input = column_scale.get()
     y_input = row_scale.get()
+    if len(imageList) == 0:
+        tk.messagebox.showerror('Error', 'Input pictures first' )
+        return
     if len(imageList) > x_input * y_input:
         tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Remove Pictures to fit size')
     elif len(imageList) < x_input * y_input:
@@ -119,13 +122,13 @@ def pass_data(imageList):
         loading_screen.mainloop()
 
 
-def config_Coladge(imgLisg, xValue, yValue):
+def config_Coladge(imgList, xValue, yValue):
     q = queue.Queue()
     q2 = queue.Queue()
 
     global progressbar
     progressbar.start(5)
-    coladgeThread = Thread(target=lambda: run_code(imgLisg, xValue, yValue,q, q2))
+    coladgeThread = Thread(target=lambda: run_code(imgList, xValue, yValue,q, q2))
     coladgeThread.start() # Start processing of coladge
 
     coladgeThread.join() # Must finish the processing before continuing
@@ -146,11 +149,11 @@ def run_code(imageList, xVal, yVal,q ,q2):
 def save_picture(pic, picList, x, y):
     def run_code(pic):
         savePath = tk.filedialog.asksaveasfilename(title='Enter Save location', initialdir=os.path.expanduser('~'), filetypes=[('PNG Files', '*.png')])
-        if '.png' in savePath:
-            pic.save(savePath)
-            tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
+        if savePath == '':
+            return None
         else:
-            pic.save(savePath+'.png')
+            save_process = Thread(target=lambda: pic.save(savePath))
+            save_process.start()
             tk.messagebox.showinfo('Save Complete', 'Image saved successfully!')
 
     save_window = tk.Toplevel(root)
