@@ -98,9 +98,9 @@ def pass_data(imageList):
         tk.messagebox.showerror('Error', 'Input pictures first' )
         return
     if len(imageList) > x_input * y_input:
-        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Remove Pictures to fit size')
+        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+' Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Remove Pictures to fit size')
     elif len(imageList) < x_input * y_input:
-        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+'Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Add more pictures to fit size')
+        tk.messagebox.showerror('Error', 'Cannot fit '+str(len(imageList))+' Pictures in a '+str(x_input)+'x'+str(y_input)+ ' Grid. Add more pictures to fit size')
 
     else:
         global progressbar
